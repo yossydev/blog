@@ -6,7 +6,9 @@
     "build": "vite build --mode client && vite build",
     "preview": "wrangler pages dev ./dist",
     "deploy": "$npm_execpath run build && wrangler pages deploy ./dist",
-    "lint": "eslint ."
+    "format": "biome format . --write",
+    "lint": "biome lint .",
+    "check": "biome check --apply ."
   },
   "private": true,
   "dependencies": {
@@ -14,6 +16,7 @@
     "honox": "^0.1.4"
   },
   "devDependencies": {
+    "@biomejs/biome": "1.5.3",
     "@cloudflare/workers-types": "^4.20240208.0",
     "@hono/vite-cloudflare-pages": "^0.2.4",
     "@typescript-eslint/eslint-plugin": "^7.0.2",
