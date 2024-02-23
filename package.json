@@ -5,7 +5,8 @@
     "dev": "vite",
     "build": "vite build --mode client && vite build",
     "preview": "wrangler pages dev ./dist",
-    "deploy": "$npm_execpath run build && wrangler pages deploy ./dist"
+    "deploy": "$npm_execpath run build && wrangler pages deploy ./dist",
+    "lint": "eslint ."
   },
   "private": true,
   "dependencies": {
@@ -15,7 +16,10 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240208.0",
     "@hono/vite-cloudflare-pages": "^0.2.4",
+    "@typescript-eslint/eslint-plugin": "^7.0.2",
+    "@typescript-eslint/parser": "^7.0.2",
     "autoprefixer": "^10.4.17",
+    "eslint": "^8.56.0",
     "postcss": "^8.4.35",
     "tailwindcss": "^3.4.1",
     "vite": "^5.0.12",

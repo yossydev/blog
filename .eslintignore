@@ -1,0 +1,7 @@
+tsconfig.eslint.json
+vite.config.ts
+tailwind.config.js
+postcss.config.js
+/app/global.d.ts
+.eslintrc.cjs
+node_modules
