@@ -8,9 +8,8 @@ export default defineConfig(({ mode }) => {
 		return {
 			plugins: [client()],
 		};
-	} else {
-		return {
-			plugins: [honox(), pages()],
-		};
 	}
+	return {
+		plugins: [honox(), pages()],
+	};
 });
