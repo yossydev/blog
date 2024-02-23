@@ -1,6 +1,6 @@
-import { Style } from 'hono/css'
-import { jsxRenderer } from 'hono/jsx-renderer'
-import { Script } from 'honox/server'
+import { Style } from "hono/css";
+import { jsxRenderer } from "hono/jsx-renderer";
+import { Script } from "honox/server";
 
 export default jsxRenderer(({ children, title }) => {
   return (
@@ -14,5 +14,5 @@ export default jsxRenderer(({ children, title }) => {
       </head>
       <body>{children}</body>
     </html>
-  )
-})
+  );
+});
