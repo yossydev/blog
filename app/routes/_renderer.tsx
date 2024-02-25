@@ -16,7 +16,7 @@ export default jsxRenderer(({ children, title }) => {
         {import.meta.env.PROD ? (
           <link href="static/assets/style.css" rel="stylesheet" />
         ) : (
-          <link href="/app/index.css" rel="stylesheet" />
+          <link href="/app/style.css" rel="stylesheet" />
         )}
       </head>
       <body>
