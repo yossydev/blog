@@ -1,6 +1,6 @@
+import { FC } from "hono/jsx";
 import { createRoute } from "honox/factory";
 import Counter from "../islands/counter";
-import { FC } from "hono/jsx";
 
 export default createRoute((c) => {
   const name = c.req.query("name") ?? "Hono";

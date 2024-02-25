@@ -1,8 +1,8 @@
 import { Style } from "hono/css";
+import { type FC } from "hono/jsx";
 import { jsxRenderer } from "hono/jsx-renderer";
 import { Script } from "honox/server";
 import { LINK } from "../constants";
-import { type FC } from "hono/jsx";
 
 export default jsxRenderer(({ children, title }) => {
   return (
