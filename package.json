@@ -8,7 +8,8 @@
     "deploy": "$npm_execpath run build && wrangler pages deploy ./dist",
     "format": "biome format --write .",
     "lint": "biome lint .",
-    "check": "biome check --apply ."
+    "check": "biome check --apply .",
+    "typecheck": "tsc -p . --noEmit"
   },
   "private": true,
   "dependencies": {
