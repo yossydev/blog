@@ -10,6 +10,7 @@
     "lint": "biome lint .",
     "lint:fix": "biome check --apply .",
     "check": "biome check --apply .",
+    "check:ci": "biome ci .",
     "typecheck": "tsc -p . --noEmit"
   },
   "private": true,
