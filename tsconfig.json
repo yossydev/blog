@@ -10,7 +10,8 @@
     ],
     "skipLibCheck": true,
     "types": [
-      "@cloudflare/workers-types"
+      "@cloudflare/workers-types",
+      "vite/client"
     ],
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx"
