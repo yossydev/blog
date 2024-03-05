@@ -33,5 +33,8 @@ export default defineConfig(({ mode }) => {
       }),
       ssg({ entry }),
     ],
+    build: {
+      outDir: "public",
+    },
   };
 });
