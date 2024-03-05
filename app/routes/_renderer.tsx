@@ -1,6 +1,6 @@
 import { Style } from "hono/css";
 import { jsxRenderer } from "hono/jsx-renderer";
-import { Script } from "honox/server";
+import { HasIslands, Script } from "honox/server";
 import { LINK } from "../constants";
 
 export default jsxRenderer(({ children, title, description }) => {
@@ -27,14 +27,13 @@ export default jsxRenderer(({ children, title, description }) => {
         ) : (
           <link href="/app/style.css" rel="stylesheet" />
         )}
+        <link
+          rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.css"
+        />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" />
+        <script>hljs.highlightAll();</script>
       </head>
-      <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.css"
-      />
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" />
-      <script>hljs.highlightAll();</script>
-
       <body class="main-container">
         <header class="mt-3 bg-black">
           <div class="max-w-screen-2xl mx-auto flex h-16 items-center justify-between px-6">
