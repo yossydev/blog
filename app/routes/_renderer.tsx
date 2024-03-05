@@ -3,13 +3,23 @@ import { jsxRenderer } from "hono/jsx-renderer";
 import { Script } from "honox/server";
 import { LINK } from "../constants";
 
-export default jsxRenderer(({ children, title }) => {
+export default jsxRenderer(({ children, title, description }) => {
+  const _title = title ?? "yossy.dev";
+  const _description = description ?? "yossydev's personal blog";
+  const _image = "/static/profile-image.png";
+
   return (
     <html lang="en">
       <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        {<title>{title ?? "yossy.dev"}</title>}
+        <title>{_title}</title>
+        <meta property="og:title" content={_title} />
+        <meta property="og:description" content={_description} />
+        <meta property="og:image" content={_image} />
+        <meta name="twitter:site" content="@yossydev" />
+        <meta name="twitter:image" content={_image} />
+        <meta name="twitter:card" content="summary_large_image" />
         <Script src="/app/client.ts" async />
         <Style />
         {import.meta.env.PROD ? (
@@ -24,6 +34,7 @@ export default jsxRenderer(({ children, title }) => {
       />
       <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" />
       <script>hljs.highlightAll();</script>
+
       <body>
         <header class="mt-3 bg-black">
           <div class="max-w-screen-2xl mx-auto flex h-16 items-center justify-between px-6">
