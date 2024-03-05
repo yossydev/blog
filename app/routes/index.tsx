@@ -1,10 +1,9 @@
+import { Heading } from "../components/Heading";
 import { FC } from "hono/jsx";
-import { createRoute } from "honox/factory";
 
-export default createRoute((c) => {
-  const name = c.req.query("name") ?? "Hono";
-  return c.render(
-    <div>
+export default function Top() {
+  return (
+    <>
       <Heading title="Hi! I'm Yuto" />
       <div class="mt-5">
         <p class="font-medium">
@@ -20,12 +19,10 @@ export default createRoute((c) => {
           </span>
         </p>
       </div>
-
-      <Post />
-    </div>,
-    { title: name },
+      <Posts />
+    </>
   );
-});
+}
 
 type PostEntry = {
   [key: string]: {
@@ -38,7 +35,7 @@ type PostEntry = {
 
 const FIRST_BLOG_POST_YEAR = 2021;
 
-const Post: FC = () => {
+const Posts: FC = () => {
   const posts = import.meta.glob<{
     frontmatter: { title: string; date: string; published: boolean };
   }>("./posts/*.mdx", { eager: true });
@@ -62,12 +59,9 @@ const Post: FC = () => {
     const thisYear = new Date().getFullYear();
     for (let year = FIRST_BLOG_POST_YEAR; year <= thisYear; year++) {
       const arrBlog = Object.entries(sortedPosts).filter(([_, module]) => {
-        // 日付文字列からDateオブジェクトを作成
         const postYear = new Date(module.frontmatter.date).getFullYear();
-        // 投稿の年がループ中の年と一致するかチェック
         return postYear === year;
       });
-      // 年ごとの投稿データを配列に追加
       blogData.push({
         year: year,
         posts: arrBlog,
@@ -103,14 +97,6 @@ const Post: FC = () => {
             </>
           ))}
       </ul>
-    </div>
-  );
-};
-
-const Heading: FC<{ title: string }> = ({ title }) => {
-  return (
-    <div class="border-b border-black mt-10">
-      <h1 class="text-2xl font-semibold pb-1">{title}</h1>
     </div>
   );
 };

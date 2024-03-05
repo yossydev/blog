@@ -8,7 +8,7 @@ declare module "hono" {
   interface ContextRenderer {
     (
       content: string | Promise<string>,
-      head?: Head,
+      head?: Head & { frontmatter?: Head },
     ): Response | Promise<Response>;
   }
 }

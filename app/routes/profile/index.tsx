@@ -3,10 +3,6 @@ import { createRoute } from "honox/factory";
 import { LINK } from "../../constants";
 import { Heading } from "../../components/Heading";
 
-const Text: FC<{ text: string }> = ({ text }) => {
-  return <p class="text-lg font-medium mt-6">{text}</p>;
-};
-
 const SnsList: {
   id: number;
   title: "X" | "BlueSky" | "GitHub" | "LinkedIn" | "Email" | "Zenn";
@@ -44,8 +40,11 @@ const SnsList: {
   },
 ];
 
+const Text: FC<{ text: string }> = ({ text }) => {
+  return <p class="text-lg font-medium mt-6">{text}</p>;
+};
+
 export default createRoute((c) => {
-  const name = c.req.query("name") ?? "Hono";
   return c.render(
     <>
       <Heading title="About Me" />
@@ -72,6 +71,6 @@ export default createRoute((c) => {
         ))}
       </ul>
     </>,
-    { title: name },
+    { title: "Profile | yossy.dev" },
   );
 });

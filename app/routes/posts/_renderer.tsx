@@ -1,8 +1,8 @@
 import { jsxRenderer } from "hono/jsx-renderer";
 
-export default jsxRenderer(({ children, Layout }) => {
+export default jsxRenderer(({ children, Layout, frontmatter }) => {
   return (
-    <Layout>
+    <Layout title={`${frontmatter?.title} | yossy.dev`}>
       <div class="markdown">{children}</div>
     </Layout>
   );

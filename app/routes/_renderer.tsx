@@ -9,7 +9,7 @@ export default jsxRenderer(({ children, title }) => {
       <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>{title}</title>
+        {<title>{title ?? "yossy.dev"}</title>}
         <Script src="/app/client.ts" async />
         <Style />
         {import.meta.env.PROD ? (
@@ -54,6 +54,9 @@ export default jsxRenderer(({ children, title }) => {
           </div>
         </header>
         <main className="max-w-[900px] mx-auto">{children}</main>
+        <footer>
+          <p>&copy; 2024 yossy blog. All rights reserved.</p>
+        </footer>
       </body>
     </html>
   );
