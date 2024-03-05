@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+.main-container {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  grid-template-columns: 100%;
+  min-height: 100vh;
+}
+
 .markdown {
   @apply text-gray-900 leading-normal break-words;
 }
