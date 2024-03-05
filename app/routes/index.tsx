@@ -78,7 +78,7 @@ const Posts: FC = () => {
           .reverse()
           .map((res) => (
             <>
-              <h2 class="text-2xl my-5 font-bold">{res.year}</h2>
+              <h3 class="text-xl my-5 font-bold">{res.year}</h3>
               {res.posts.map(([id, module]) => {
                 return (
                   <li class="text-lg">
