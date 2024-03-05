@@ -1,0 +1,84 @@
+---
+title: "1月のOSS活動の振り返り"
+emoji: "😀"
+description: "2024年1月のOSS活動の振り返り"
+ogImage: "/ogp/profile-image.png"
+date: "2024/02/04"
+published: true
+---
+
+# 1月のOSS活動の振り返り
+
+少し遅くなってしまいましたが、2024年1月のOSS活動の振り返りです。
+
+12月（という名の1年の振り返り）のOSS活動の振り返りはこちら
+https://yossydev.com/posts/oss-2023-12
+
+## 出したPull Request
+
+今月は[6個](https://github.com/pulls?q=is%3Apr+author%3Ayossydev+-owner%3Aintegritis+-owner%3ASeiya-Tagami+-owner%3AConnecting-Study-Group+-owner%3AKenyaMasuko+archived%3Afalse+sort%3Acreated-desc+-org%3Ayossydev+-org%3Awe-quest+draft%3Afalse+created%3A2024-01-01..2024-02-01+is%3Aclosed)のPRを出せました。
+去年が1年間で13個だったので、1ヶ月で約半分の数を出せたのは嬉しいです。
+
+- [feat(linter): eslint-plugin-jsx-a11y no-redundant-roles rule](https://github.com/oxc-project/oxc/pull/1981)
+- [feat(linter): eslint-plugin-jsx-a11y autocomplete-valid](https://github.com/oxc-project/oxc/pull/1901)
+- [feat(linter): eslint-plugin-jsx-a11y role-has-required-aria-props rule](https://github.com/oxc-project/oxc/pull/1881)
+- [feat(linter): eslint-plugin-jsx-a11y prefer-tag-over-role rule](https://github.com/oxc-project/oxc/pull/1831)
+- [Change "pages" to "apps" in the Image Component Example description](https://github.com/vercel/next.js/pull/60929)
+- [add other arm targets for cargo-binstall](https://github.com/jdx/mise/pull/1510)
+
+## oxc
+
+eslint-plugin-jsx-a11yをoxcでも使えるようにしているみたいです。
+
+> eslint-plugin-jsx-a11yは、JSXとReact.jsのアクセシビリティルールに特化したESLintプラグインです。
+
+- no-redundant-roles
+- autocomplete-valid
+- role-has-required-aria-props
+- prefer-tag-over-role
+
+自分も少しでも貢献したいと思い、上記4つのルールを作成しました。既存のeslintのルールを見つつそれをRustで書き直すのが楽しかったです。
+まだ残りできていないルールがありそうなので、2月もやっていこうと思っています。
+
+貢献するに当たって、`phf::phf_map`と`phf::phf_set`の違いについて学びました。「buttonタグに使えるrole」というのを指定するために最初は実行時にkey valueで格納するようにしていましたが、phf_mapを使用することでコンパイル時に事前に生成しておけることをレビューで知りました。
+これらはコンパイル時に不変のハッシュマップとハッシュセットを生成するために使用します。実行時には生成されたハッシュを使用するだけなので、パフォーマンスが向上します。
+
+```rust
+use phf::{phf_map, phf_set};
+
+static MY_MAP: phf::Map<&'static str, u32> = phf_map! {
+    "hello" => 1,
+    "world" => 2,
+};
+
+static MY_SET: phf::Set<&'static str> = phf_set! {
+    "hello world",
+    "hola mundo",
+};
+```
+
+phf_mapがkey valueで格納されるのに対し、phf_setは一意の値として格納されます。
+
+## [Next.js: Change "pages" to "apps" in the Image Component Example description #60929](https://github.com/vercel/next.js/pull/60929)
+
+example自体はappsなのにreadmeにはpagesで書かれていたので修正PRを出したところマージされました。いつもお世話になっているNext.jsにコントリビュートできたのはとても嬉しかったです。
+
+ちなみになんでexampleを見ていたのかというと、先月書いたnext/imageについてのブログで調査していた時に気づいた感じでした。
+https://yossydev.com/posts/next-image-remote-and-local
+
+ドキュメントはかなり整備されている印象がありますが、exampleに関してはメンテナンスが追いついていない印象なので、Next.jsに貢献してみたい方はexampleをみてPRを出して見るのが良いのではないでしょうか。
+
+## [mise: add other arm targets for cargo-binstall #1510](https://github.com/jdx/mise/pull/1510)
+
+> This section is missing some of the new targets. Super easy change if someone wants to contribute. Just find the new ones in GitHub Releases.
+> 日本語訳: このセクションには新しいターゲットの一部が欠けている。誰かが貢献したいのであれば、とても簡単な変更だ。GitHub Releasesで新しいものを見つけるだけだ。
+
+とのことなので、リリースノートを見て、armv7とarmv6が抜けていたので、`armv7-unknown-linux-gnueabihf` と `armv6-unknown-linux-gnueabihf` のインストールURLを追加しました。
+これにより、cargo-binstall を使用してこれらのプラットフォーム向けにバイナリをインストールするときに、指定したURLが使用されるようになります。
+
+これの何が嬉しいかというと、ユーザーがコンパイルをしたり、特定のプラットフォーム向けに最適化されたバイナリを提供することで、そのプラットフォーム上でのアプリケーションのパフォーマンスと安定性が向上するといったメリットがあるみたいです。学びです😏
+
+## まとめ
+
+以上が1月のOSS活動の振り返りになります。
+1月後半は本業の方が忙しく、あんまりOSSに触れていなかったですが、2, 3月は時間があるのでできる限りOSSに時間を割けるようにしていきたいです。

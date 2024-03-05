@@ -1,0 +1,78 @@
+---
+title: "12月のOSS活動"
+emoji: "🎃"
+ogImage: "/ogp/profile-image.png"
+date: "2023/12/30"
+published: true
+---
+
+## 12月のOSS活動振り返り
+
+2024年はOSS活動を頑張っていきたいのと、自分の振り返りとしても残しておきたいので、これから毎月書くようにします。
+2023年は最後ですが、これはその12月分です。
+
+ちなみに今年のPR数は[13個](https://github.com/pulls?q=is%3Apr+author%3Ayossydev+-owner%3Aintegritis+-owner%3ASeiya-Tagami+-owner%3AConnecting-Study-Group+-owner%3AKenyaMasuko+archived%3Afalse+sort%3Acreated-desc+-org%3Ayossydev+-org%3Awe-quest+draft%3Afalse+created%3A2023-01-01..2024-01-01+)でした。12月に一気に加速した感じあります。
+
+## 出したPull Request
+
+- [doc(ja): translate continuous-integration into Japanese](https://github.com/biomejs/biome/pull/955)
+- [doc(ja): translate versioning into Japanese](https://github.com/biomejs/biome/pull/906)
+- [doc(ja): translate language-support into Japanese](https://github.com/biomejs/biome/pull/900)
+- [feat(website): Introduction to textlint](https://github.com/biomejs/biome/pull/986)
+- [docs(website): update import sorting doc](https://github.com/biomejs/biome/pull/989)
+- [fix(cli): only count errors for max diagnostics](https://github.com/biomejs/biome/pull/1248)
+- [fix: improve error messaging for unreachable loop return cases](https://github.com/rust-lang/rust/pull/119178)
+- [docs(spindle-ui): implement autofocus for enhanced UI interaction](https://github.com/openameba/spindle/pull/864)
+- [feat: node to version 18](https://github.com/openameba/spindle/pull/867)
+- [fix: 「大きな文字」の基準を日本語の全角文字基準に](https://github.com/openameba/a11y-guidelines/pull/439)
+- [feat: dialog起動時のフォーカス順序の事例を導入](https://github.com/openameba/a11y-guidelines/pull/438)
+
+## Biome
+
+### 日本語翻訳
+
+- [doc(ja): translate continuous-integration into Japanese](https://github.com/biomejs/biome/pull/955)
+- [doc(ja): translate versioning into Japanese](https://github.com/biomejs/biome/pull/906)
+- [doc(ja): translate language-support into Japanese](https://github.com/biomejs/biome/pull/900)
+
+Biomeのドキュメントの日本語翻訳を行いました。OSS活動に慣れていない人には初めの第一歩としてちょうどよかったのかなという気がしています。
+
+### 986: [`textlint`の導入](https://github.com/biomejs/biome/pull/986)
+
+翻訳をしていく中で、日本語で書くか英語で書くか悩ましいところの制御にちょうどよかったです。
+
+https://github.com/yossydev/biome/blob/main/website/prh.yml
+
+PRにも記載しましたが、他のいくつかの日本語翻訳プロジェクトを参考にしました。
+今回の自分が導入したルールは割と最小構成で幅広く使える気がしているので、ぜひ今後OSSの翻訳をする予定のあるプロジェクトでは参考にしていただければ幸いです。
+
+あとtextlint初めて触ったんですが、設定楽でめちゃくちゃいい感じですね。
+
+### 989: [`import sorting`のドキュメントを更新](https://github.com/biomejs/biome/pull/989)
+
+`--apply`が安全に利用できるようになったので、`--apply-unsafe`で書いている箇所を`--apply`になるようにドキュメントを更新しました。
+https://github.com/yossydev/biome/blob/4399a4d7209911669c61237177cff7957f61481d/crates/biome_cli/src/commands/mod.rs#L57-L60
+
+### 1248: [最大診断のエラーだけをカウントするように](https://github.com/biomejs/biome/pull/1248)
+
+:::message
+引き継いでいただきました🙏
+:::
+
+`-diagnostic-level=error`を指定しても、`-max-diagnostics=N`のヒープ/スタック/その他がlintの警告でいっぱいになっていれば、実際にはlintのエラーは出力されないという状態になっていた
+これを修正するPRを出したんですが、自分の実力不足で、メンテナーの方が再度修正PRを出してくれました。反省です。
+
+## Rust
+
+### 119178: [到達不能なループが返された場合のエラーメッセージを改善](https://github.com/rust-lang/rust/pull/119178)
+
+:::message
+まだマージされていません
+:::
+
+パターンが単一のバインディングの場合は別のエラーメッセージを返すように修正しました。Rustのいい勉強になります。
+
+## まとめ
+
+Rustはずっと勉強してみたいとは思っていたのですが、僕の特性上ただ勉強するだけなのが苦手で、何か目的があることで力を発揮するタイプなんですが、「Rustで作られたOSSにコミットもっとしたい！！」という強いモチベーションが生まれたことで、自分の中でRustに対する勉強モチベが上がったのはとても良いことだなと思っています。
+ただその反面、なんとなくノリでいけるだろうとか思ってたら全然そんなことはなく(当たり前)、レビュワーに負担をかけすぎたなと反省しています。

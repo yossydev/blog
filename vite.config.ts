@@ -1,7 +1,13 @@
 import pages from "@hono/vite-cloudflare-pages";
 import honox from "honox/vite";
 import client from "honox/vite/client";
+import mdx from "@mdx-js/rollup";
+import remarkFrontmatter from "remark-frontmatter";
+import remarkMdxFrontmatter from "remark-mdx-frontmatter";
+import ssg from "@hono/vite-ssg";
 import { defineConfig } from "vite";
+
+const entry = "./app/server.ts";
 
 export default defineConfig(({ mode }) => {
   if (mode === "client") {
@@ -18,6 +24,14 @@ export default defineConfig(({ mode }) => {
     };
   }
   return {
-    plugins: [honox(), pages()],
+    plugins: [
+      honox(),
+      pages(),
+      mdx({
+        jsxImportSource: "hono/jsx",
+        remarkPlugins: [remarkFrontmatter, remarkMdxFrontmatter],
+      }),
+      ssg({ entry }),
+    ],
   };
 });

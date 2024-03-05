@@ -15,8 +15,16 @@
   },
   "private": true,
   "dependencies": {
+    "@hono/vite-ssg": "^0.1.0",
+    "@mdx-js/mdx": "^3.0.1",
+    "@mdx-js/rollup": "^3.0.1",
+    "highlight.js": "^11.9.0",
     "hono": "^4.0.5",
-    "honox": "^0.1.4"
+    "honox": "^0.1.4",
+    "react-syntax-highlighter": "^15.5.0",
+    "rehype-highlight": "^7.0.0",
+    "remark-frontmatter": "^5.0.0",
+    "remark-mdx-frontmatter": "^4.0.0"
   },
   "devDependencies": {
     "@biomejs/biome": "1.5.3",
