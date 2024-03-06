@@ -1,6 +1,6 @@
 import { Style } from "hono/css";
 import { jsxRenderer } from "hono/jsx-renderer";
-import { HasIslands, Script } from "honox/server";
+import { Script } from "honox/server";
 import { LINK } from "../constants";
 
 export default jsxRenderer(({ children, title, description }) => {
@@ -63,7 +63,7 @@ export default jsxRenderer(({ children, title, description }) => {
             </div>
           </div>
         </header>
-        <main class="max-w-[900px] mx-auto">{children}</main>
+        <main class="w-full px-4 lg:max-w-4xl lg:px-0 mx-auto">{children}</main>
         <footer class="mt-10 text-center py-4 border-t border-black">
           <p>&copy; 2024 yossy blog. All rights reserved.</p>
         </footer>

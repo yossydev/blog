@@ -81,10 +81,11 @@ const Posts: FC = () => {
               <h3 class="text-xl my-5 font-bold">{res.year}</h3>
               {res.posts.map(([id, module]) => {
                 return (
-                  <li class="text-lg">
+                  <li class="text-lg mt-2 md:mt-1">
                     <span class="tabular-nums tnum">
                       {module.frontmatter.date}:{" "}
                     </span>
+                    <br class="block md:hidden" />
                     <a
                       class="text-blue-600"
                       href={`${id.replace(/\.mdx$/, "")}`}
