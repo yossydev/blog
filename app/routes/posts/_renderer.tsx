@@ -1,6 +1,6 @@
 import { jsxRenderer } from "hono/jsx-renderer";
-import Share from "../../islands/share";
 import LikeButton from "../../islands/Like";
+import Share from "../../islands/share";
 
 export default jsxRenderer(({ children, Layout, frontmatter }) => {
   const _title = `${frontmatter?.title} | yossy.dev`;

@@ -1,7 +1,7 @@
 import { FC } from "hono/jsx";
 import { createRoute } from "honox/factory";
-import { LINK } from "../../constants";
 import { Heading } from "../../components/Heading";
+import { LINK } from "../../constants";
 
 const SnsList: {
   id: number;
