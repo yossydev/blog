@@ -37,3 +37,4 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           projectName: "yossydev-blog" 
           accountId: ${{ secrets.ACCOUNT_ID }} 
+          directory: './dist'
