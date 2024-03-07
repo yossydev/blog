@@ -34,4 +34,4 @@ jobs:
       - name: Deploy to CloudPages
         run: npm run deploy
         env:
-          CLOUD_PAGES_TOKEN: ${{ secrets.CLOUD_PAGES_TOKEN }} 
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }} 
