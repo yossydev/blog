@@ -42,6 +42,7 @@ const Posts: FC = () => {
   const entries = Object.entries(posts).filter(
     ([_, module]) => module.frontmatter.published,
   );
+
   const sortedEntries = entries
     .sort((a, b) => {
       const dateA = new Date(a[1].frontmatter.date).getTime();
@@ -87,7 +88,7 @@ const Posts: FC = () => {
                     </span>
                     <br class="block md:hidden" />
                     <a
-                      class="text-blue-600"
+                      class="text-blue-600 underline"
                       href={`${id.replace(/\.mdx$/, "")}`}
                     >
                       {module.frontmatter.title}
