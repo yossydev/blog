@@ -15,7 +15,9 @@ const SnsButton: FC<{ title: string }> = ({ title }) => {
   return (
     <div class="flex items-center justify-center mt-10 gap-3">
       <a
-        href={`https://twitter.com/share?url=${window.location.href}&text=${title}`}
+        href={`https://twitter.com/share?text=${encodeURI(title)}&url=${
+          window.location.href
+        }`}
         target={"_blank"}
         rel={"noreferrer"}
         class="bg-[#0f1419] text-white flex items-center text-sm rounded-3xl py-3 px-4"
