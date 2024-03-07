@@ -1,7 +1,7 @@
-import { useEffect, useState } from "hono/jsx";
+import { FC, useEffect, useState } from "hono/jsx";
 import { useDebounce } from "../hooks/useDebounce";
 
-export default function LikeButton() {
+const LikeButton: FC = () => {
   const [allCount, setAllCount] = useState(0);
   const [count, setCount] = useState(0);
   const [clicked, setClicked] = useState(false);
@@ -64,4 +64,6 @@ export default function LikeButton() {
       <p class="text-lg mt-3">{allCount}</p>
     </div>
   );
-}
+};
+
+export default LikeButton;

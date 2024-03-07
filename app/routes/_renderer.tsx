@@ -1,7 +1,7 @@
 import { Style } from "hono/css";
 import { jsxRenderer } from "hono/jsx-renderer";
-import { Script } from "honox/server";
 import { LINK } from "../constants";
+import { Script } from "../libs/honox";
 
 export default jsxRenderer(({ children, title, description }) => {
   const _title = title ?? "yossy.dev";
@@ -20,7 +20,7 @@ export default jsxRenderer(({ children, title, description }) => {
         <meta name="twitter:site" content="@yossydev" />
         <meta name="twitter:image" content={_image} />
         <meta name="twitter:card" content="summary_large_image" />
-        <Script src="/app/client.ts" async />
+        <Script src="/app/client.ts" />
         <Style />
         {import.meta.env.PROD ? (
           <link href="/static/assets/style.css" rel="stylesheet" />

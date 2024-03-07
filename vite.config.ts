@@ -24,6 +24,9 @@ export default defineConfig(({ mode }) => {
     };
   }
   return {
+    build: {
+      emptyOutDir: false,
+    },
     plugins: [
       honox(),
       pages(),

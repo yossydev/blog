@@ -1,6 +1,6 @@
 import { jsxRenderer } from "hono/jsx-renderer";
-import LikeButton from "../../islands/Like";
-import Share from "../../islands/share";
+import LikeButton from "../../islands/LikeButton";
+import SnsButton from "../../islands/SnsButton";
 
 export default jsxRenderer(({ children, Layout, frontmatter }) => {
   const _title = `${frontmatter?.title} | yossy.dev`;
@@ -8,7 +8,7 @@ export default jsxRenderer(({ children, Layout, frontmatter }) => {
     <Layout title={_title} description={frontmatter?.description}>
       <div class="markdown">{children}</div>
       <LikeButton />
-      <Share title={_title} />
+      <SnsButton title={_title} />
     </Layout>
   );
 });

@@ -1,6 +1,7 @@
+import { FC } from "hono/jsx";
 import { LINK } from "../constants";
 
-export default function Share({ title }: { title: string }) {
+const SnsButton: FC<{ title: string }> = ({ title }) => {
   if (typeof window === "undefined") {
     return (
       <div class="flex items-center justify-center mt-10 gap-3 ">
@@ -10,6 +11,7 @@ export default function Share({ title }: { title: string }) {
       </div>
     );
   }
+
   return (
     <div class="flex items-center justify-center mt-10 gap-3">
       <a
@@ -35,4 +37,6 @@ export default function Share({ title }: { title: string }) {
       </a>
     </div>
   );
-}
+};
+
+export default SnsButton;
