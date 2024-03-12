@@ -1,4 +1,4 @@
-import { FC } from "hono/jsx";
+import type { FC } from "hono/jsx";
 import { Heading } from "../components/Heading";
 
 export default function Top() {
