@@ -16,7 +16,7 @@ export default jsxRenderer(({ children, title, description }) => {
         <title>{_title}</title>
         <meta property="og:title" content={_title} />
         <meta property="og:description" content={_description} />
-        <meta property="og:image" content={_image} />
+        <meta property="og:image" content={`https://yossy.dev/${_image}`} />
         <meta name="twitter:site" content="@yossydev" />
         <meta name="twitter:image" content={`https://yossy.dev/${_image}`} />
         <meta name="twitter:card" content="summary_large_image" />
