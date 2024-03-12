@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "hono/jsx";
+import { type FC, useEffect, useState } from "hono/jsx";
 import { useDebounce } from "../hooks/useDebounce";
 
 const LikeButton: FC = () => {

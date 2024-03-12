@@ -1,0 +1,125 @@
+---
+title: "HonoXでブログを作り直した。そしてテンプレートも作った"
+description: "HonoXでブログを作り直しました。開発体験がとても良かったので、使ってみたいけど手が出せてない方向けにテンプレートリポジトリを作りました。"
+date: "2024/03/07"
+published: true
+---
+
+# HonoXでブログを作り直した。そしてテンプレートも作った
+
+## Intro
+
+今回自分のブログをNext.jsからHonoXに書き換えをしました。あんまりまだ使ってる人いないと思うので、今後使ってみたい向けにブログとして残しておきます。
+
+## honox-blog-templeteを作った
+
+最初に今後HonoXを使っていきたい方向けに[honox-blog-templete](https://github.com/yossydev/honox-blog-templete)というテンプレートリポジトリを作りました。
+
+基本的には[yusukebe](https://github.com/yusukebe)さんの[honox mdx exmaple](https://github.com/yusukebe/honox-examples/tree/main/projects/mdx)で事足りるのですが、技術ブログを書きたい人はシンタックスハイライトの設定をしたり、フォーマッターの設定など色々することもあるかと思うので、その辺りを設定しておきました！
+サクッとブログを作りたい方は使ってみてください！
+
+```bash
+$ npm run create:post
+```
+
+を実行すると対話形式でブログのテンプレートを作れます！あとはブログを書いて、Cloudflare pagesなりにデプロイをすると完成です！UIはお好みでどうぞ！
+
+## 感想
+
+### 1. mdxがそのまま使えるのありがたい
+
+[https://github.com/honojs/honox?tab=readme-ov-file#mdx](https://github.com/honojs/honox?tab=readme-ov-file#mdx)に書いてある内容です。
+
+自分の場合は`/app/posts`配下にmdxファイルをおいているんですが、ビルドするとhtmlファイルに変換されるので、そのままブラウザに表示させることができます。追加の設定もほぼいらないので、びっくりするほど簡単でした。
+
+
+### 2. Hooksが使えるのありがたい
+
+hono/jsxがReactと互換性があるため、Hooksを使うことができます。([https://hono.dev/guides/jsx-dom#hooks-compatible-with-react](https://hono.dev/guides/jsx-dom#hooks-compatible-with-react))
+
+そのため、今回隠れた追加機能としていいね機能を追加したんですが、これにdebounce機能を用いる際に[zenn](https://zenn.dev/luvmini511/articles/4924cc4cf19bc9)にあった参考のhooksをそのまま使うことができ、とても楽でした。
+
+
+```ts
+import { useEffect, useState } from "hono/jsx";
+
+export function useDebounce(value: number, delay: number) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+```
+
+### 3. CI組んでprごとにpreviewにも出せるようにできた
+
+自分は書いたブログごとにPRを出すようにしています。そうするとVercelだとpreview環境を用意してくれるためです。書いたブログのチェックで、最終確認を行いたい時にみます。
+
+この体験は損ねたくなかったので、Cloudflare pagesでも同じことしたいと思い調べたところ、[cloudflare/pages-action@v1](https://github.com/cloudflare/pages-action)を使うことでとても簡単に実現できました。
+
+[GitHub ActionsでビルドしてCloudflare Pagesにデプロイする](https://zenn.dev/nwtgck/articles/1fdee0e84e5808) ← このブログがとても参考になりました！[pull_request.yml](https://github.com/yossydev/blog/blob/main/.github/workflows/pull_request.yml)にコードがあるので参考にしてみてくださいー！
+
+
+### 3. Islandコンポーネントが_renderer.tsxで使うとscriptが読み込まれない
+
+今回[いいね機能](https://github.com/yossydev/blog/blob/main/app/islands/LikeButton.tsx)と[Xへのシェアとフォローのボタン](https://github.com/yossydev/blog/blob/main/app/islands/SnsButton.tsx)はisland配下に置いて、全てのブログページ下部で表示させるために`_renderer.tsx`配下に置いています。
+
+この場合表示はされるんですが、[honox/serverのScirptコンポーネント](https://github.com/honojs/honox/blob/main/src/server/components/script.tsx)では使用上`HasIsland`がtrueになった場合に本番環境でscirptが読み込まれるようになる仕様になっているみたいでした。
+
+```tsx
+export const Script: FC<Options> = async (options) => {
+  const src = options.src
+  if (options.prod ?? import.meta.env.PROD) {
+    let manifest: Manifest | undefined = options.manifest
+    if (!manifest) {
+      const MANIFEST = import.meta.glob<{ default: Manifest }>('/dist/.vite/manifest.json', {
+        eager: true,
+      })
+      for (const [, manifestFile] of Object.entries(MANIFEST)) {
+        if (manifestFile['default']) {
+          manifest = manifestFile['default']
+          break
+        }
+      }
+    }
+    if (manifest) {
+      const scriptInManifest = manifest[src.replace(/^\//, '')]
+      if (scriptInManifest) {
+        return (
+          <HasIslands>
+            <script
+              type='module'
+              async={!!options.async}
+              src={`/${scriptInManifest.file}`}
+            ></script>
+          </HasIslands>
+        )
+      }
+    }
+    return <></>
+  } else {
+    return <script type='module' async={!!options.async} src={src}></script>
+  }
+}
+```
+
+scriptが読み込まれないので、インタクションが発生しても何も起きない状態が発生しません。
+そのため、`<HasIslands>`で囲まないようにした[Scriptコンポーネント](https://github.com/yossydev/blog/blob/main/app/libs/honox/Script.tsx)を自分の方で用意することにしました。
+ただ絶対この方法良くないと思うので、なんかいい方法あれば教えていただきたいです🙇‍♂️
+
+[https://twitter.com/yusukebe/status/1765727221526983014](https://twitter.com/yusukebe/status/1765727221526983014) ← Xで[yusukebe](https://github.com/yusukebe)さんにお聞きしたところ直していいとのことなので、今頑張って開発しています。また進捗があれば共有します。
+
+## まとめ
+
+個人的には開発体験良くて、Cloudflare pagesへのデプロイも爆速だったので流行って欲しいなと思います！
+あと今回npm使ったけどbunにしてみたいし、もうちょっとislandの恩恵を感じられるようなインタラクション多めのアプリでも採用してみたいです！
+
+ぜひ皆さんもHonoX使ってみてくださいー！！🔥

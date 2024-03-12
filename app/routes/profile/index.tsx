@@ -1,4 +1,4 @@
-import { FC } from "hono/jsx";
+import type { FC } from "hono/jsx";
 import { createRoute } from "honox/factory";
 import { Heading } from "../../components/Heading";
 import { LINK } from "../../constants";
