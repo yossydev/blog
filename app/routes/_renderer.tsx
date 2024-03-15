@@ -14,6 +14,7 @@ export default jsxRenderer(({ children, title, description }) => {
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>{_title}</title>
+        <link rel="icon" href={_image} />
         <meta property="og:title" content={_title} />
         <meta property="og:description" content={_description} />
         <meta property="og:image" content={`https://yossy.dev${_image}`} />
