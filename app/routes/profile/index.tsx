@@ -16,7 +16,7 @@ const SnsList: {
   {
     id: 2,
     title: "BlueSky",
-    href: LINK.X,
+    href: LINK.BlueSky,
   },
   {
     id: 3,
