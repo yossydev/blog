@@ -6,7 +6,7 @@ import { Script } from "../libs/honox";
 export default jsxRenderer(({ children, title, description }) => {
   const _title = title ?? "yossy.dev";
   const _description = description ?? "yossydev's personal blog";
-  const _image = "/static/profile-image.png";
+  const _image = "/static/smile.png";
 
   return (
     <html lang="en">
@@ -19,7 +19,7 @@ export default jsxRenderer(({ children, title, description }) => {
         <meta property="og:image" content={`https://yossy.dev${_image}`} />
         <meta name="twitter:site" content="@yossydev" />
         <meta name="twitter:image" content={`https://yossy.dev${_image}`} />
-        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:card" content="summary" />
         <Script src="/app/client.ts" />
         <Style />
         {import.meta.env.PROD ? (
