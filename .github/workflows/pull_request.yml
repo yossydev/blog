@@ -28,7 +28,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Setup Bun
-        uses: Bun-Setup/bun-setup-action@v1
+        uses: oven-sh/setup-bun@v1
         with:
           bun-version: 'latest'
       - name: Install dependencies
