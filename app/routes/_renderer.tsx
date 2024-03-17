@@ -61,6 +61,18 @@ export default jsxRenderer(({ children, title, description }) => {
                   class="w-7 h-7 text-white"
                 />
               </a>
+              <a
+                href={LINK.YOUTUBE}
+                target={"_blank"}
+                rel={"noreferrer"}
+                class="p-2"
+              >
+                <img
+                  src="/static/youtube-svgrepo-com.svg"
+                  alt="x-icon"
+                  class="w-9 h-9"
+                />
+              </a>
             </div>
           </div>
         </header>
