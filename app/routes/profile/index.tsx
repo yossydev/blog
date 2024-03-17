@@ -6,7 +6,7 @@ import { getAge } from "../../libs/date";
 
 const SnsList: {
   id: number;
-  title: "X" | "BlueSky" | "GitHub" | "LinkedIn" | "Email" | "Zenn";
+  title: string;
   href: string;
 }[] = [
   {
@@ -17,7 +17,7 @@ const SnsList: {
   {
     id: 2,
     title: "BlueSky",
-    href: LINK.BlueSky,
+    href: LINK.BLUESKY,
   },
   {
     id: 3,
@@ -38,6 +38,11 @@ const SnsList: {
     id: 7,
     title: "Zenn",
     href: LINK.ZENN,
+  },
+  {
+    id: 8,
+    title: "Youtube",
+    href: LINK.YOUTUBE,
   },
 ];
 
