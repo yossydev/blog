@@ -69,7 +69,7 @@ export default jsxRenderer(({ children, title, description }) => {
               >
                 <img
                   src="/static/youtube-svgrepo-com.svg"
-                  alt="x-icon"
+                  alt="youtube-icon"
                   class="w-9 h-9"
                 />
               </a>
