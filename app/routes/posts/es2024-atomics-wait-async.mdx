@@ -61,7 +61,7 @@ https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Sh
 基本的には、異なるスレッドはWeb WorkerやService Workerを使用し、そして別スレッドとのデータのやり取り[postMessage](developer.mozilla.org/en-US/docs/Web/API/Worker/postMessage)を使用すると思います。
 以下は[mdn](developer.mozilla.org/en-US/docs/Web/API/Worker/postMessage)にあったpostMessageのサンプルコードです。
 
-```js:developer.mozilla.org/en-US/docs/Web/API/Worker/postMessage
+```js
 const myWorker = new Worker("worker.js");
 
 first.onchange = () => {

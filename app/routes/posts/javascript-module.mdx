@@ -29,16 +29,16 @@ published: true
 
 初期の JavaScript は script を読み込んで実行していましたが、読み込む順番によって値の上書きが起こってしまうことがありました。
 
-```ts: foo.js
+```ts
 var message = "Hello from script 1";
 ```
 
-```ts: bar.js
+```ts
 var message = "Hello from script 2";
 console.log(message); // "Hello from script 2"
 ```
 
-```html: index.html
+```html
 <script src="foo.js"></script>
 <script src="bar.js"></script> <!-- foo.jsのmessage変数が上書きされてしまう" -->
 ```
@@ -52,24 +52,24 @@ console.log(message); // "Hello from script 2"
 
 script を読み込む順番を間違うと、まだ定義されてなくてエラーになったりしていました。
 
-```ts: script1.js
+```ts
 function doSomething() {
  console.log('Doing something...');
 }
 ```
 
-```ts: script2.js
+```ts
 function doAnotherThing() {
  doSomething();
   console.log('Doing another thing...');
 }
 ```
 
-```ts: script3.js
+```ts
 doAnotherThing();
 ```
 
-```html: index.html
+```html
 <script src="script1.js"></script>
 <script src="script3.js"></script> <!-- doAnotherThingはまだ定義されていないのでエラーになる -->
 <script src="script2.js"></script>
