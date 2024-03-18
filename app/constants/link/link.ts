@@ -1,4 +1,5 @@
 export const LINK = {
+  RSS: "https://rss-feed-generator.fly.dev/rss",
   X: "https://twitter.com/yossydev",
   BLUESKY: "https://bsky.app/profile/yossydev.com",
   GITHUB: "https://github.com/yossydev",

@@ -40,6 +40,18 @@ export default jsxRenderer(({ children, title, description }) => {
               Yuto Blog
             </a>
             <div class="flex items-center gap-2">
+              <a
+                href={LINK.RSS}
+                target={"_blank"}
+                rel={"noreferrer"}
+                class="p-2"
+              >
+                <img
+                  src="/static/rss-svgrepo-com.svg"
+                  alt="rss-icon"
+                  class="w-9 h-9"
+                />
+              </a>
               <a href={LINK.X} target={"_blank"} rel={"noreferrer"} class="p-2">
                 <img
                   src="/static/twitter-alt.svg"
