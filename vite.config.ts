@@ -1,12 +1,12 @@
-import { defineConfig } from "vite";
 import pages from "@hono/vite-cloudflare-pages";
 import ssg from "@hono/vite-ssg";
 import mdx from "@mdx-js/rollup";
 import honox from "honox/vite";
 import client from "honox/vite/client";
+import rehypeHighlight from "rehype-highlight";
 import remarkFrontmatter from "remark-frontmatter";
 import remarkMdxFrontmatter from "remark-mdx-frontmatter";
-import rehypeHighlight from "rehype-highlight";
+import { defineConfig } from "vite";
 
 const entry = "./app/server.ts";
 
