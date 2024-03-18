@@ -84,9 +84,9 @@ const Posts: FC = () => {
               {res.posts.map(([id, module]) => {
                 return (
                   <li class="text-lg mt-2 md:mt-1">
-                    <span class="tabular-nums tnum">
-                      {module.frontmatter.date}:{" "}
-                    </span>
+                    <time class="tabular-nums tnum date pr-3">
+                      {module.frontmatter.date}
+                    </time>
                     <br class="block md:hidden" />
                     <a
                       class="text-blue-600 underline"
