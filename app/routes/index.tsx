@@ -90,7 +90,7 @@ const Posts: FC = () => {
                     <br class="block md:hidden" />
                     <a
                       class="text-blue-600 underline"
-                      href={`${id.replace(/\.mdx$/, "")}`}
+                      href={`${id.replace(/\.mdx$/, "").replace(/\./g, "")}`}
                     >
                       {module.frontmatter.title}
                     </a>
