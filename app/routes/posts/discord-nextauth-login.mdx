@@ -45,7 +45,7 @@ $ yarn add next-auth
 
 #### Provider の設定
 
-```tsx:pages/api/auth/[...nextauth].js
+```tsx
 import NextAuth from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
 
@@ -171,7 +171,7 @@ export default NextAuth(authOptions);
 
 3. 実際に api 叩く
 
-   ```tsx:pages/index.tsx
+   ```tsx
    export const Home:FC = () => {
     const { data: session } = useSession();
 
