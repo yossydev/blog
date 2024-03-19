@@ -39,44 +39,29 @@ export default jsxRenderer(({ children, title, description }) => {
             <a href="/" class="text-white text-base font-bold">
               Yuto Blog
             </a>
-            <div class="flex items-center gap-2">
-              <a
-                href={LINK.RSS}
-                target={"_blank"}
-                rel={"noreferrer"}
-                class="p-2"
-              >
+            <div class="flex items-center gap-4">
+              <a href={LINK.RSS} target={"_blank"} rel={"noreferrer"}>
                 <img
                   src="/static/rss-svgrepo-com.svg"
                   alt="rss-icon"
                   class="w-9 h-9"
                 />
               </a>
-              <a href={LINK.X} target={"_blank"} rel={"noreferrer"} class="p-2">
+              <a href={LINK.X} target={"_blank"} rel={"noreferrer"}>
                 <img
                   src="/static/twitter-alt.svg"
                   alt="x-icon"
                   class="w-7 h-7"
                 />
               </a>
-              <a
-                href={LINK.GITHUB}
-                target={"_blank"}
-                rel="noreferrer"
-                class="p-2"
-              >
+              <a href={LINK.GITHUB} target={"_blank"} rel="noreferrer">
                 <img
                   src="/static/github.svg"
                   alt="github-icon"
                   class="w-7 h-7 text-white"
                 />
               </a>
-              <a
-                href={LINK.YOUTUBE}
-                target={"_blank"}
-                rel={"noreferrer"}
-                class="p-2"
-              >
+              <a href={LINK.YOUTUBE} target={"_blank"} rel={"noreferrer"}>
                 <img
                   src="/static/youtube-svgrepo-com.svg"
                   alt="youtube-icon"
