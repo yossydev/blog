@@ -1,0 +1,155 @@
+---
+title: "「Google Developer Expertsが語るWeb技術の最前線」に参加しました"
+description: "2024/3/19に開催された「Google Developer Expertsが語るWeb技術の最前線」に参加してきたのでそちらの感想ブログ"
+date: "2024/03/20"
+published: true
+---
+
+# Google Developer Expertsが語るWeb技術の最前線に参加しました
+
+##  Intro
+
+3/19にあった、[Google Developer Expertsが語るWeb技術の最前線](https://gdg-tokyo.connpass.com/event/311662/)に参加してきました。
+
+セッションはもちろんのこと、懇親会でもGDEの方にお話し聞けたのでとてもありがたい機会でした！！ぜひ今後もこういった機会があればいいなと思います！
+そして本ブログでは、各セッションを振り返りつつ、どんなイベントだったかを振り返って行けたらいいなと思っています。
+
+**Getting started with designing for web accessibility**に関しては全て英語で、自分があんまり英語のリスニングに自信がなくメモの内容が合っているか不安なので今回は書かないことにしています🙇‍♂️
+
+##  プライバシーサンドボックスとサードパーティCookieの廃止
+
+このセッションでは、サードパーティCookieの備えて開発者がしておくべき準備や、そもそもサードパーティCookieとは何かといったセッションでした。
+
+資料はこちらです: [https://docs.google.com/presentation/d/15NttJMB8JYjN2J1z6q5Khe3ef-ARQ6HgdUuPdXBoMq4/edit#slide=id.g62fc528f49_1_72
+](https://docs.google.com/presentation/d/15NttJMB8JYjN2J1z6q5Khe3ef-ARQ6HgdUuPdXBoMq4/edit#slide=id.g62fc528f49_1_72)
+
+###  1. サードパーティCookieとは何か
+
+自分がいまいちサードパーティCookieについて理解しきれていなかったので、こちらについても書いておきます。
+すでに知識のある方は次の見出しにいった方が良いと思います。
+
+サードパーティCookieとは、「トップレベルのドメインとは別のドメインからcookieを発行/セットすること」です。
+開発者にとってわかりやすいのはSNS連携だと思っていて、OAuthを使ったGitHubログインでは、github.comからcookieを発行すると思うので、サードパーティcookieを使っていると言えると思います。
+
+[資料](https://docs.google.com/presentation/d/15NttJMB8JYjN2J1z6q5Khe3ef-ARQ6HgdUuPdXBoMq4/edit#slide=id.g62fc528f49_1_72)の中では他の用途についても解説されていました。個人的には「広告の用途で使用する」というのがどんな感じで使われているかイメージつかなかったので簡単に調べました。
+
+#### 広告の用途で使用する
+
+広告で使用するというのはつまり、ユーザーの行動を跨いだサイトで追跡して、そのデータを使用して使用してユーザーに対してより関連性の高い広告を表示することらしいです。
+わかりやすいのはアフェリエイト広告で、自分もどのアフィリエイトリンク経由でユーザーが商品やサービスを購入したかを追跡することで、アフェリエイトりを張ったユーザーに対して報酬が送られているそうです。
+
+他にも広告の種類によって色々な追い方があるそうなので、また別の機会にブログにできればいいなと思っています。
+
+###  2. サードパーティCookieはなぜ廃止になるのか
+
+サードパーティCookieは色々な用途で使用され、とても便利なものだということが理解できました。
+しかしではなぜ廃止になってしまうのでしょうか？？
+
+それはどうやら、**想定外の利用が増えたことによるプライバシーの侵害が増えた**ということが背景にあるようです。
+
+> 同じ広告ネットワークを、様々な Web サイトが導入することで、「どんなサイトで何を見たか」「どんなサービスで何を調べたか」などの、断片的な情報を蓄積すれば、「誰か(識別)」は不明なままでも、「どんな人か(区別)」の解像度を上げていくことも可能だ。
+> 
+> 参考: [3PCA 6 日目: トラッキングの問題](https://blog.jxck.io/entries/2023-12-06/3pca-tracking.html)
+
+本来はウェブサイト間での情報共有を可能にする用途だったのが、ユーザーが取った行動データを収集することによりその人がどんな人かある程度わかってしまうというプライバシーの問題があったということですね。
+
+###  3. サードパーティCookieの廃止に伴って開発者はどのようなことをすれば良いのか 
+
+[こちら](https://docs.google.com/presentation/d/15NttJMB8JYjN2J1z6q5Khe3ef-ARQ6HgdUuPdXBoMq4/edit#slide=id.g2c3cc128450_0_9)に書いてある通りかなと思います。かなり長くなってしまう気がするので、残りは自分がとっていたメモを貼っておきます。
+
+  1. サードパーティCookie利用のチェック
+     - SameSite = Noneがあるかチェック
+     - devtools issue
+       - サードパーティCookieを使っているwebサイトだと、issueに警告が出る
+     - [Privacy Sandbox Analisys Tool](https://chromewebstore.google.com/detail/privacy-sandbox-analysis/ehbnpceebmgpanbbfckhoefhdibijkef)を使う
+  2. 破損をテスト
+     - Chrome flagsを使ってテストをする
+     - サードパーティCookieの廃止前と廃止後の両方でテストをすることが大事
+     - 破損の報告
+       - 申請をすることで猶予がもらえる
+  3. 軽減する
+     - Thirs party deperecation trialを使うことでサイトの軽減ができる
+     - Enterprise Policeies
+       - Chrome ブラウザを管理している企業向け
+       - 会社単位で管理している場合はこれを使うと良い
+  4. CHIPSによる隔離
+     - 別のドメインではなく、一つのトップレベルサイトに限定する場合にCHIPSが使える？？
+       - ほとんどこれで事足りるそう
+       - ユーザーの行動を異なるドメインで追ったりすることはCHIPSではできない
+  5. Related Website Sets
+     - 「このドメイン間であればcookieを許可してください」みたいな範囲を決める機能のこと
+     - まだ世界で8個しか登録がないらしい
+
+以上が**プライバシーサンドボックスとサードパーティCookieの廃止**というセッションの内容です。
+サードパーティCookieの理解についてはかなり曖昧だったので大変学びになるセッションでした。
+
+## ブラウザと仕様のアップデート
+
+このセッションでは、最近のWebについての色々なトピックの内容でした。
+
+### HTML/UI
+
+`dialog`タグのようなJavaScriptに頼らないUIの提案というのが増えてきているそうで、最近だとPopover APIというものが出ているそうです。（Popover APIについては[こちら](https://zenn.dev/yusukehirao/articles/popover-api-and-attributes#%E3%83%9D%E3%83%AA%E3%83%95%E3%82%A3%E3%83%AB)の記事がわかりやすいです）
+
+それからこれも自分は知らなかったのですが、[Open UI](https://open-ui.org/)という**UIの標準化を考えて提案するグループ**もあるそうです。ただ考えられたものがHTMLにそのまま組み込まれるかと言われればまだ距離があるそう👀
+
+### CSS
+
+CSSも色々な構文が増えているそうですが、自分はあんまり追っていなかったので、軽くそれぞれ触れておきます。
+
+#### ネスト構文
+
+sassみたいな感じで生のCSSも書けるようになりました。しかしどこからどこまでがスコープなのかわかなくなるので、程々にしておいた方が良いかもとのことです。
+
+ref: [https://developer.mozilla.org/ja/docs/Web/CSS/CSS_nesting](https://developer.mozilla.org/ja/docs/Web/CSS/CSS_nesting)
+
+#### `:has()`
+
+CSSで条件分岐ができるようになる構文です。こちらも条件が増えれば増えるほど読めなくなるので注意した方が良いとのこと。あと色々と書けるので、その分セレクタの処理が重くなることもあるそう。(Firefoxだと亀のマークが出る？？)
+
+ref: [https://developer.mozilla.org/ja/docs/Web/CSS/:has](https://developer.mozilla.org/ja/docs/Web/CSS/:has)
+
+#### `@scope`
+
+セレクタの適用範囲を設定できる構文です。
+
+ref: [https://developer.mozilla.org/ja/docs/Web/CSS/:scope](https://developer.mozilla.org/ja/docs/Web/CSS/:scope)
+
+#### `@property`
+
+カスタムプロパティを設定できる構文。
+
+ref: [https://developer.mozilla.org/ja/docs/Web/CSS/@property](https://developer.mozilla.org/ja/docs/Web/CSS/@property)
+
+#### レイアウト
+
+サブグリッドが使えるようになったので、グリッドが使いやすくなった
+
+ref: [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_grid_layout/Subgrid](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_grid_layout/Subgrid
+)
+
+### cssが組み込まれるまでの変化や実装の今の知りかたなど
+
+- 変化
+  - MVP的な方針に変わっている
+  - とりあえず入れるけど、ブラウザで問題が出た時に対応に時間がかかっている
+- 実装の今をどう知るのか
+  - リリースノートをみる
+  - ベースラインというものが導入されようとしている
+    - ブラウザで実装が揃った or 実装が揃って時間が経った
+    - ref: [https://developer.mozilla.org/ja/docs/Glossary/Baseline/Compatibility](https://developer.mozilla.org/ja/docs/Glossary/Baseline/Compatibility)
+- 互換性大事
+  - Webが発展してきたのは常に互換性を意識してきたため
+  - 今あるものを大きく崩して発展させようとはしていない
+- 何ができるのか
+  - 動かないなら報告する
+
+## まとめ
+
+どれも大変勉強になるセッションでした。プライバシーサンドボックスの話もそうですが、最近ブラウザーの動向にも興味があり、特にCSS周りの動きはあんまり自分が追えていなかった部分で、デフォルトでScssが使えるようになるような構文が多く追加されているんだなと思いました。これからはその辺りも追えるようにしていきたいです。
+
+あと今回初めてGoogleのオフィスに行きました。綺麗でした。
+
+## 関連
+
+- [Google Developer Expertsが語るWeb技術の最前線](https://gdg-tokyo.connpass.com/event/311662/)
