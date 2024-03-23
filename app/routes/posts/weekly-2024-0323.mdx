@@ -1,0 +1,65 @@
+---
+title: "weekly blog 3/18 ~ 3/24"
+description: "3/18 ~ 3/24の1週間で見た記事や技術をアップデートを書いたブログです"
+date: "2024/03/23"
+published: true
+---
+
+# weekly blog 3/18 ~ 3/24
+
+今週はNode.js系の話が多かった気がします。
+
+## [require\(esm\) in Node.js](https://joyeecheung.github.io/blog/2024/03/18/require-esm-in-node-js/)
+Node.jsでesmで書かれたファイルが`require`で読み込めるようになりました。
+以下はブログの要約です。
+
+### 要約
+
+Node.jsで長年ESMを`require`で読み込めなかったのは、ESMが非同期実行を持つためと説明されていました。
+つまりESMはimport文がトップレベルで`await`を使用する可能性があるため、同期的な`require`とは互換性がないとされていたそうです。
+
+しかしこのブログを書いた[@JoyeeCheung](https://twitter.com/JoyeeCheung)さんがJSエンジンの[v8](https://v8.dev/)のコードを見る過程で、esmが無条件に非同期になるわけではなくて、トップレベルの`await`が含まれる場合のみ非同期になることを知ったそうです。(なので今回トップレベルawaitに対応していないのも納得ですね。)
+
+そしてどうやらESMを`require`で読み込めるようにするアイデア自体は2019年に提案されていたらしいですが、サポートが遅くなってしまった原因としては、技術的な問題よりも**文化的な側面**が多いらしく、Node.jsのESM実装を担当するグループと、それ以外の開発者で分断があったそうです。
+
+## [Array.filter ← これで型が絞れるようになるらしい](https://zenn.dev/pipipipipi/articles/d28389ffe985ec)
+
+Array.filterで今までisを使って型ガードしないといけなかったところを型推論されるようになったらしいです。
+
+## [The redesigned http://nodejs.org is live!](https://x.com/nodejs/status/1770134114915823684?s=20)
+
+Node.jsのサイトがリニューアルされました。以下はXの投稿の抜粋です。
+
+> - Fresh look 
+> - Comprehensive search 
+> - New learning resources 
+> - APIs & downloads unchanged 
+> - Improved contributor DX  
+
+## [Node.js: The Documentary | An origin story](https://www.youtube.com/watch?v=LB8KwiiUGy0)
+
+Node.jsのドキュメンタリーがYoutubeで公開されました。
+
+感想としては、何度も人が移り変わり、forkされio.jsが生まれ、そして統合されNode.js v4がリリースされた。たくさんの紆余曲折の話が聞けて面白かったです。あとこの頃は全くプログラミングを知らなかったので、こういった話はとっても好きです。
+
+## [Page Speed Insightsの改善 「CLSで満点を取る」 - Hello Tech](https://tech.hello.ai/entry/pagespeed2-cls)
+
+CLS改善に関するブログです。以下は資料の中にあったCLS改善のポイントです。
+
+- 要素の領域を事前に確保する
+- 空白にしておくとUX悪いのでスケルトンを使う
+- CLSを改善しようとするとUIの変更をしないといけない可能性もある
+
+## [Rust 1.77.0](https://blog.rust-lang.org/2024/03/21/Rust-1.77.0.html)
+
+rustの1.77がリリースされました。
+ただまだ自分の知識がなくて今回リリースされた機能の旨みはわからなかったです
+
+## 関連
+
+- [require\(esm\) in Node.js](https://joyeecheung.github.io/blog/2024/03/18/require-esm-in-node-js/)
+- [Array.filter ← これで型が絞れるようになるらしい](https://zenn.dev/pipipipipi/articles/d28389ffe985ec)
+- [The redesigned http://nodejs.org is live!](https://x.com/nodejs/status/1770134114915823684?s=20)
+- [Node.js: The Documentary | An origin story](https://www.youtube.com/watch?v=LB8KwiiUGy0)
+- [Page Speed Insightsの改善 「CLSで満点を取る」 - Hello Tech](https://tech.hello.ai/entry/pagespeed2-cls)
+- [Rust 1.77.0](https://blog.rust-lang.org/2024/03/21/Rust-1.77.0.html)
