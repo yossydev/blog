@@ -7,6 +7,7 @@ import rehypeHighlight from "rehype-highlight";
 import remarkFrontmatter from "remark-frontmatter";
 import remarkMdxFrontmatter from "remark-mdx-frontmatter";
 import { defineConfig } from "vite";
+import rehypeTOC from "./app/libs/vite-remark-toc-plugin";
 
 const entry = "./app/server.ts";
 
@@ -25,16 +26,13 @@ export default defineConfig(({ mode }) => {
     };
   }
   return {
-    build: {
-      emptyOutDir: false,
-    },
     plugins: [
       honox(),
       pages(),
       mdx({
         jsxImportSource: "hono/jsx",
         remarkPlugins: [remarkFrontmatter, remarkMdxFrontmatter],
-        rehypePlugins: [rehypeHighlight],
+        rehypePlugins: [rehypeHighlight, rehypeTOC],
       }),
       ssg({ entry }),
     ],

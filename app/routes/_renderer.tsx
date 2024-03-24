@@ -1,4 +1,3 @@
-import { Style } from "hono/css";
 import { jsxRenderer } from "hono/jsx-renderer";
 import { LINK } from "../constants";
 import { Script } from "../libs/honox";
@@ -22,7 +21,6 @@ export default jsxRenderer(({ children, title, description }) => {
         <meta name="twitter:image" content={`https://yossy.dev${_image}`} />
         <meta name="twitter:card" content="summary" />
         <Script src="/app/client.ts" />
-        <Style />
         {import.meta.env.PROD ? (
           <link href="/static/assets/style.css" rel="stylesheet" />
         ) : (
