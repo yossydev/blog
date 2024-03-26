@@ -53,7 +53,7 @@ export const HasIslands: FC = ({ children }) => {
 }
 ```
 
-ここで問題なのが、このコンポーネントがhono/jsxに依存していることです。
+ここで問題なのが、このコンポーネントが`hono/jsx-renderer`を使用しているところです。
 
 reactRendererを使用する場合は`@hono/react-renderer`の`useRequestContext`を使う必要があるので、HasIslandコンポーネントは動かずせっかくのislandアーキテクチャが意味をなさなくなってしまいます。
 
@@ -70,7 +70,9 @@ const HasIslands: FC<PropsWithChildren> = ({ children }) => {
 ```
 
 回避策として、自分でコンポーネントを作ればislandコンポーネントが機能するようになります。
-__importing_islandsという定数は、ファイル内にislandディレクトリからのimportがあれば付く識別子です。それを使って`c.get(IMPORTING_ISLANDS_ID)`とgetすることでislandコンポーネントがimportされていればtrueが返ってくるみたいな仕組みになっています。
+
+`__importing_islands`という定数は、ファイル内にislandディレクトリからのimportがあれば付く識別子です。それを使って`c.get(IMPORTING_ISLANDS_ID)`とgetすることでislandコンポーネントがimportされていればtrueが返ってくるみたいな仕組みになっています。
+ここら辺は以前コントリビュートした際の知見が活きています💪 [feat: preserved file island support #114](https://github.com/honojs/honox/pull/114)
 
 この件に関しては[Creating HasIslands component with useRequestContext in react-renderer #127](https://github.com/honojs/honox/issues/127)でissueを出しました。
 
