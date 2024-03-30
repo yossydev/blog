@@ -1,0 +1,74 @@
+---
+title: "jsr.ioのパッケージのアップデートをgithub actionsを使って行う"
+description: "最近jsr.ioを使ってパッケージを公開しました。（色々あって公開したパッケージはアーカイブしました）。その際に毎回手元でコマンドを叩くの面倒だったので、github actionsを使ってmainにpushしたら更新されるようにしたのでブログに残しておきます。"
+date: "2024/03/30"
+published: true
+---
+
+## Intro
+最近[jsr.io](https://jsr.io/)にパッケージを公開しました。（色々あって公開したパッケージはアーカイブしました）。
+
+その際に毎回手元でコマンドを叩くの面倒だったので、github actionsを使ってmainにpushしたら更新されるようにしました。基本的には[Publishing from GitHub Actions](https://jsr.io/docs/publishing-packages#publishing-from-github-actions)を見ればできると思いますが、このブログでは補足として残しておきます。
+
+## 1. リポジトリとの連携
+
+リポジトリとjsrを連携させる必要があります。
+
+```bash
+error: Failed to publish @yossydev/example@0.1.0
+
+Caused by:
+    0: Failed to publish @yossydev/example at 0.1.0
+    1: The actor that this request was authenticated for is not authorized to access this resource.  
+    (actorNotAuthorized)[x-deno-ray: ------]
+Child process exited with: 1
+Error: Process completed with exit code 1.
+```
+
+未連携の状態でCIを回すと上記のようなエラーになるかと思います。
+（exampleは仮のパッケージです。本来はここにjsr.jsonに書いたパッケージ名が入ります。）
+
+### 設定
+
+<img width="592" alt="image" src="https://github.com/yossydev/blog/assets/87469023/15935504-763a-4841-8b48-ec68d23a4b09"/>
+
+`https://jsr.io/[スコープ名]/[パッケージ名]/publish`にアクセスします。`Publish`というタブがあるはずなので、そちらをクリックすればそのリンクに飛べます。
+
+<img width="1255" alt="image" src="https://github.com/yossydev/blog/assets/87469023/a9d7e927-b41a-40b3-8b11-0008087fdb3e"/>
+
+まだ未設定の場合は↑ のようになっているはずで、この右側の`Publish from CI`のところにリポジトリ名を入れ、`Link`をクリックします。
+
+これだけで設定はOKです。
+
+### メリット
+
+[GitHub Actions publishing security](https://jsr.io/docs/scopes#github-actions-publishing-security)によれば、github actionsのワークフローをトリガーにしたユーザーがjsrのスコープのメンバーである場合にのみ公開を許可できるそうです。
+
+この設定を無効にした場合は誰でも公開できるようになるそうなので、基本的には有効にしておくのが良さそうですね。
+
+ちなみにCLIから公開する場合は認証が必要なので、勝手にバージョン上げられるみたいなことはなさそうです。
+
+## 2. `jsr.json`のバージョンをあげる（もしかしたら不要かもしれない）
+
+こちらは自分は必要でしたが、環境設定が悪いという問題もあるかもしれないです。
+もし間違っていればご指摘いただけると幸いです。
+
+jsrで公開するパッケージについては、`jsr.json`か`deno.json`というファイルを作る必要があります。
+自分の場合はjsr.jsonを使用しました。
+
+> This workflow will run every time you push to the main branch of your repository. It will publish your package to JSR, and will automatically use the correct version number based on the version in your jsr.json file. jsr publish will not attempt to publish if the version specified in your jsr.json file is already published to JSR.
+
+このCIではmainにpushした時に走るようになっていますが、その際にそのバージョンがすでに公開されていれば公開しようとしないそうです。
+
+そうなるとよくあるgithubのリポジトリでtagを切ってrelease noteを書いてrelaseしてバージョンあげるみたいなフローをする際に、
+一旦手動で`jsr.json`のバージョンをあげないといけないのかなと思ってます。もしかしたらその辺りも良い感じにできるのかもしれません。
+
+## まとめ
+
+以上が今回の内容です。この記事が誰かの役に立てば幸いです。
+
+## 関連
+
+- [jsr.io](https://jsr.io/) 
+- [Publishing from GitHub Actions](https://jsr.io/docs/publishing-packages#publishing-from-github-actions)
+- [GitHub Actions publishing security](https://jsr.io/docs/scopes#github-actions-publishing-security)
