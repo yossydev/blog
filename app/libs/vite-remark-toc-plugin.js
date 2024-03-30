@@ -51,7 +51,7 @@ function buildTOC(headings) {
       {
         type: "element",
         tagName: "summary",
-        children: [{ type: "text", value: "見出し - table of contents" }],
+        children: [{ type: "text", value: "目次" }],
       },
       {
         type: "element",
