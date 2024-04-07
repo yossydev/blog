@@ -1,0 +1,89 @@
+---
+title: "weekly blog 4/1 ~ 4/7"
+description: "4/1 ~ 4/7の1週間で見た記事や技術アップデート情報を書いたブログです"
+date: "2024/04/07"
+published: true
+---
+
+## Intro
+
+今週の目玉はなんと言ってもCloudflareのDeveloper Week 2024でした。
+色々調べながら書いたのですが正直合っているか怪しいので、間違った内容があれば[Blog](https://github.com/yossydev/blog)にPR送るなり[X](https://twitter.com/yossydev)で指摘するなりしていただければと思います。
+
+## [Welcome to Developer Week 2024](https://blog.cloudflare.com/ja-jp/welcome-to-developer-week-2024-ja-jp/)
+
+今回のDeveloper WeekのIntroです。
+
+## [Making state easy with D1 GA, Hyperdrive, Queues and Workers Analytics Engine updates](https://blog.cloudflare.com/making-full-stack-easier-d1-ga-hyperdrive-queues)
+
+Cloudflare D1がGAになりました。
+これによりDBはCloudflare D1、バックエンドはCloudflare Workers、フロントエンドはCloudflare Pagesで配信するというCloudflareスタックでアプリケーションを作っていくところが増えるのではないでしょうか。
+またどこかで[Hono](https://github.com/honojs/hono)と組み合わせてフルスタックアプリを作りたいですね。
+
+あとは自分が全く知らなかったHyperdriveもGAになったようです。
+これは事前にHyperdriveがDBとの接続を確立しておくことで初回の接続にかかる時間を減らしてくれるものらしいです（よくわかってない）。
+
+## [Leveling up Workers AI: general availability and more new capabilities](https://blog.cloudflare.com/ja-jp/workers-ai-ga-huggingface-loras-python-support-ja-jp/)
+
+Workers AIがGAになりました。自分は使ったことないので全然わからないです。
+
+あとはPython Workersが発表されました。今まではJavaScript、TypeScript、Rust(wasm)の3言語に対応していましたが、Pythonも使えるようになったと言うことですね。これは熱いです。
+
+## [Bringing Python to Workers using Pyodide and WebAssembly](https://blog.cloudflare.com/python-workers/)
+
+Python Workersについてのブログです。RustはWASMにコンパイルすることで動きますが、なんでWASMにしないといけないんだろうと思っていたところWorkersはV8を使用して動かしているからなんですね。なのでJSとWASMは動かせると。
+
+今回は[Pyodide](https://pyodide.org/en/stable/)というものを使用してPythonコードをWASMに変換することで動かせるようにしているようですね。
+ちなみにブログ内にも書いてありますが、WASMに事前に変換することで、今までもpythonでworkersは動かせたようです。確かにwasmが動くのであればそうなりますよね。
+
+今回のサポートで何が変わったかというと、Pyodideがpythonのコードをwasmにコンパイルすることで開発者は意識しなくてよくなったことで簡単にデプロイまでできるようになったことがあるみたいですね。
+
+## [Announcing Pages support for monorepos, wrangler.toml, database integrations and more!](https://blog.cloudflare.com/pages-workers-integrations-monorepos-nextjs-wrangler)
+
+Cloudflare pageのアップデートについてです。
+
+まずはmonorepoについて。
+今までmonorepoプロジェクトをpagesにデプロイするにはcli上で手動アップロードが必要だったのを公式がサポートしたことでTurborepoのようなmonorepoツールを使っていても簡単にデプロイできるようになりました。
+
+そして次にwrangler.tomlのサポートです。これはつまり、今までダッシュボードで設定していた環境変数などを全てwrangler.tomlで完結できるようになったと言うことらしいです。
+Honoを使っていたりするとすでにwrangler.tomlがあると思いますが、`npx wrangler@latest pages download config <PROJECT_NAME>`というコマンドを打つことでpagesのwrangler.tomlがダウンロードされ、それを編集して再度デプロイすれば設定が反映されるそうです。
+Cloudflareの開発体験がまた良くなりそうですね😏
+
+## [We've added JavaScript-native RPC to Cloudflare Workers](https://blog.cloudflare.com/javascript-native-rpc)
+
+ラストはXでかなりざわついていたRPCの発表です。そもそもRPCとはなんぞやって感じだったんですが、Remote Procedure Callの略で、openapiやgrahplなどを使ったことある方は分かるかと思いますが、一つ関数を定義してそれを呼び出すと処理が行えるというものなんですね。
+
+そして今回cloudflareはそれを作ったわけですが、worker側でclassを一つ定義すると、それがpagesで呼び出せてしまうというものみたいです。以下はブログに書いてあったものをそのまま持ってきました。
+
+```ts
+// api.ts
+export class MyService extends WorkerEntrypoint {
+  sum(a, b) {
+    return a + b;
+  }
+}
+
+// client.ts
+let three = await env.MY_SERVICE.sum(1, 2);
+```
+
+定義したclassに対して`env.[クラス名].[関数名]`とすることで呼び出せます。
+
+多分これが本領を発揮するのはmonorepoにした時だと思っていて、そらちくんが作った[sample repository](https://github.com/sor4chi/minimun-workers-service-bindings-rpc)がだいぶイメージつきやすいのでこれを見れば良いと思います。
+
+あとは`RPC to Durable Objects`もなかなかすごそうです。
+Durable Objectsとは本来ステートレスであるはずのworkerを、ステートフルにする機能で、つまりworker間での状態のやり取りを可能にするものです。
+そしてこれのRPCなので、型安全にworker間の状態を扱えるようになったということですね。うん、すごい。
+
+## まとめ
+以上が今週のweely blogです。cloudflare weekの内容があまりにも濃くて正直完全に理解してるくらい（つまり全然理解していない）にしかなっていないのですが、かなり学びが多かったです。
+
+## 関連
+
+- [Welcome to Developer Week 2024](https://blog.cloudflare.com/ja-jp/welcome-to-developer-week-2024-ja-jp/)
+- [Making state easy with D1 GA, Hyperdrive, Queues and Workers Analytics Engine updates](https://blog.cloudflare.com/making-full-stack-easier-d1-ga-hyperdrive-queues) 
+- [Leveling up Workers AI: general availability and more new capabilities](https://blog.cloudflare.com/ja-jp/workers-ai-ga-huggingface-loras-python-support-ja-jp/)
+- [Bringing Python to Workers using Pyodide and WebAssembly](https://blog.cloudflare.com/python-workers/)
+- [Announcing Pages support for monorepos, wrangler.toml, database integrations and more!](https://blog.cloudflare.com/pages-workers-integrations-monorepos-nextjs-wrangler)
+- [We've added JavaScript-native RPC to Cloudflare Workers](https://blog.cloudflare.com/javascript-native-rpc)
+
