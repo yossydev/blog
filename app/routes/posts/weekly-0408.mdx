@@ -1,0 +1,66 @@
+---
+title: "weekly blog 4/8 ~ 4/14"
+description: "4/8 ~ 4/14の1週間で見た記事や技術アップデート情報を書いたブログです"
+date: "2024/04/14"
+published: true
+---
+
+## Intro
+
+今週は「GCつきRust」みたいな言葉をXでよく見かけた印象です。あとはtc39のmeetingが4/11に行われました。
+
+## [MoonBit が WebAssembly 時代の理想(の原型)だった](https://zenn.dev/mizchi/articles/introduce-moonbit)
+
+[moonbit](https://www.moonbitlang.com/)というプログラミング言語についてのブログです。どうやらこの言語の書き方が「GCつきのRust」のようです。
+
+ざっくり以下のような特徴があるみたいです。
+
+- WASMにコンパイルされる
+- GCがあるのでライフタイムを意識しなくて良い
+- Rustに構文が似ているので、Rustを触ったことがる人にとっては学習コストが低い
+- 2024年半ばでBetaになり、さらにその後Open Sourceになる（ref: [https://www.moonbitlang.com/blog/moonbitlang-core-opensource#the-road-to-2024-shaping-our-future-together](https://www.moonbitlang.com/blog/moonbitlang-core-opensource#the-road-to-2024-shaping-our-future-together)） 
+
+シンタックスハイライトもRustのものを使用していたりとか、CopilotがRustとして補完してしまうとかは面白いですね。
+そのうち使ってみたいものです。
+
+## tc39 meeting April
+
+tc39のmeetingが4/11に行われました。agendaは[こちら](https://github.com/tc39/agendas/blob/main/2024/04.md)ですまだこれはnotesが出たわけではないです。
+
+個人的には[signals](https://github.com/tc39/proposal-signals)がstage1になりました。こちらはいろんなWebエンジニアの型が注目しているプロポーザルなのではないでしょうか。
+
+あとは[proposal-defer-import-eval](https://github.com/tc39/proposal-defer-import-eval/)がstage 2.7になりました。
+このプロポーザルは、外部ライブラリを使用した際のパフォーマンス最適化として、今までバンドラーが頑張っていてくれていたのを標準でサポートするようにしてはどうかというプロポーザルです。
+
+例えばcjsは同期的にモジュールのimportを行います
+
+```js
+const operation = require('operation');
+
+exports.doSomething = function (target) {
+  return operation(target);
+}
+```
+
+↑ のような関数があった場合、doSomethingが呼び出さればoperationがimportされれば良いので、
+```js
+exports.doSomething = function (target) {
+  const operation = require('operation');
+  return operation(target);
+}
+```
+↑ このように直すことで必要なときに必要なモジュールをimportできますよね。ちなみにesmでは以下のようになります
+```js
+export async function doSomething (target) {
+  const { operation } = await import('operations');
+  return operation(target);
+}
+```
+
+そしてこのプロポーザルではどのように標準化しようとしているかというと以下のようにimportします
+
+```js
+import defer * as yNamespace from "y";
+```
+
+↑ のようにすることで、yNamespaceが使われたタイミングでモジュールが実行されます。逆に言えばそこまで先にロードしておきます。
