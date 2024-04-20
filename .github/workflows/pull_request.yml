@@ -8,7 +8,6 @@ on:
 
 jobs:
   deploy:
-    needs: quality 
     runs-on: ubuntu-latest
     permissions:
       statuses: write
