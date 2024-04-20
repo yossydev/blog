@@ -1,6 +1,5 @@
-import type { FC } from "hono/jsx";
+import { type FC, Fragment } from "hono/jsx";
 import { Heading } from "../components/Heading";
-import { getAge } from "../libs/date";
 
 export default function Top() {
   return (
@@ -8,8 +7,8 @@ export default function Top() {
       <Heading title="Hi! I'm Yuto" />
       <div class="mt-5">
         <p class="font-medium">
-          {`都内在住の${getAge()}歳のエンジニアです。Webパフォーマンス / Developer
-          Experienceの向上に興味があります。`}
+          都内在住の技術好きなエンジニアです。Web / OSS開発 / developer
+          experienceの向上に興味があります。
           <span class="ml-1">
             <a
               href="/profile"
@@ -78,27 +77,30 @@ const Posts: FC = () => {
       <ul class="mt-10">
         {yearlyBlogs()
           .reverse()
-          .map((res) => (
-            <>
-              <h3 class="text-xl my-5 font-bold">{res.year}</h3>
-              {res.posts.map(([id, module]) => {
-                return (
-                  <li class="text-lg mt-2 md:mt-1">
-                    <time class="tabular-nums tnum date pr-3">
-                      {module.frontmatter.date}
-                    </time>
-                    <br class="block md:hidden" />
-                    <a
-                      class="text-blue-600 underline"
-                      href={`${id.replace(/\.mdx$/, "").replace(/\./g, "")}`}
-                    >
-                      {module.frontmatter.title}
-                    </a>
-                  </li>
-                );
-              })}
-            </>
-          ))}
+          .map((res, index) => {
+            return (
+              // biome-ignore lint/suspicious/noArrayIndexKey: enable index
+              <Fragment key={`${index}`}>
+                <h3 class="text-xl my-5 font-bold">{res.year}</h3>
+                {res.posts.map(([id, module]) => {
+                  return (
+                    <li key={id} class="text-lg mt-2 md:mt-1">
+                      <time class="tabular-nums tnum date pr-3">
+                        {module.frontmatter.date}
+                      </time>
+                      <br class="block md:hidden" />
+                      <a
+                        class="text-blue-600 underline"
+                        href={`${id.replace(/\.mdx$/, "").replace(/\./g, "")}`}
+                      >
+                        {module.frontmatter.title}
+                      </a>
+                    </li>
+                  );
+                })}
+              </Fragment>
+            );
+          })}
       </ul>
     </div>
   );

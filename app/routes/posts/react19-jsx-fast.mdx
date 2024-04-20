@@ -1,0 +1,130 @@
+---
+title: "React19からJSXの変換処理が高速に"
+description: "[Fast JSX: Don't clone props object #28768](https://github.com/facebook/react/pull/28768)の内容をみつつ、どのような処理を行なって高速化されたのかをみていきます。"
+date: "2024/04/15"
+published: true
+---
+
+## Intro
+[Fast JSX: Don't clone props object #28768](https://github.com/facebook/react/pull/28768)というPRが少し前にマージされました。これはReact19からjsxが高速になると言うPRです。PR内の説明を見ればなんとなくわかるかと思いますが、自分の理解のためブログとして残しておきます。
+
+## これまでのReactのjsx
+
+今回の高速化に当たって、propsをクローンしなくなったことがポイントとしてあるようです。
+
+ではそもそもなぜpropsをクローンしていたのでしょうか。これには**1. key, refの予約語をpropsから削除すること** / **2. createElementがpublic apiである**という二つのポイントがあります。
+
+### 1. key, refの予約語をpropsから削除すること 
+
+Reactでは`props.key`や`props.ref`でこの二つのプロパティにアクセスすることはできないです。しかし、コンポーネントに渡すことはできます。
+
+```tsx
+// key
+const numbers = [1, 2, 3, 4, 5];
+const listItems = numbers.map((number) =>
+  <li key={number.toString()} ref>
+    {number}
+  </li>
+);
+
+// ref
+const FancyButton = React.forwardRef((props, ref) => (
+  <button ref={ref} className="FancyButton">
+    {props.children}
+  </button>
+));
+```
+
+keyはリスト内の要素を一意に識別するためのプロパティで、refはコンポーネントのdom動作を行うことができるプロパティです。
+
+先ほど、refは`props.ref`でアクセスできないと言いましたが、React19からは`props.ref`でアクセスできるようになります。今までは`React.forwardRef`で囲む必要があり面倒だったので、Reactを使う人にとっては嬉しいアップデートです。
+
+このアップデートによりrefの問題は解消できたので、残りはkeyになりました。そしてkeyも元々スプレット構文を使わなければクローンはされないようになっていたので、そのケース以外はクローンが必要ないことになりました。
+
+### 2. createElementがpublic apiである 
+
+次にjsxは開発者はhtmlのように書くと思いますが、もちろんそのままではブラウザでは配信できないので、トランスパイルされます。その際にReact17から`jsx`という関数を使いますが、それより以前は`createElement`という関数にトランスパイルされていました。
+
+ここら辺は[React17におけるJSXの新しい変換を理解する](https://zenn.dev/uhyo/articles/react17-new-jsx-transform)というブログがとてもわかりやすいです。
+
+そしてjsx関数は[react/jsx-runtime](https://github.com/facebook/react/blob/main/packages/react/jsx-runtime.js)から、createElementはreactからimportして我々開発者も使用することができます。
+
+```tsx
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+
+const Foo = () => {
+  return _jsxs(
+    "div",
+    {
+      children: [
+        _jsx("p", { id: "a", children: "I am foo" }, void 0),
+        _jsx("p", { children: "I am foo2" }, "b"),
+      ],
+    },
+    void 0,
+  );
+};
+
+// ↑ の処理は以下のコンポーネントをトランスパイルした結果
+const Foo = () => {
+  return (
+    <div>
+      <p id="a">I am foo</p>
+      <p key="b">I am foo2</p>
+    </div>
+  );
+};
+```
+
+ここで少し謎なのが、PRでは「the new JSX runtime, `jsx`, is not a public API」と書いてあります。そのため使用できないのかと思いきや普通に使えたし警告も特になかったです。
+ただコードジャンプしてみにいくと、「You should not use this function directly. Use JSX and a transpiler instead.」と書いてはありました。なので**使えない**ではなく**使ってもこっちは知らないよ**みたいなニュアンスなのかなと感じています。
+
+その一方、`createElement`は使われていることも考慮されているみたいですね。
+
+整理すると、createElementはユーザーも使えるもので、これを使ってpropsの変更などがあった場合整合性が合わずバグになることもあるので、それを防ぐためにpropsをクローンして元のpropsを変更しないようにしていましたが、新しい`jsx`はコンパイラとして内部的に使用されることを意図しているため、ユーザーによるpropsの変更を考慮する必要がなくなったと言う感じだと思っています。
+
+## 実装からみる高速化の仕組み
+
+高速化のために大規模な変更があったわけではなく、実装はとてもシンプルでした。
+
+```js
+// ref: https://github.com/facebook/react/blob/ea26e38e33bffeba1ecc42688d7e8cd7e0da1c02/packages/shared/ReactFeatureFlags.js#L179-L182
+export const enableRefAsProp = true;
+export const disableStringRefs = true;
+
+// ref: https://github.com/facebook/react/blob/ea26e38e33bffeba1ecc42688d7e8cd7e0da1c02/packages/react/src/jsx/ReactJSXElement.js#L348-L378
+// after
+  let props;
+  if (enableRefAsProp && disableStringRefs && !('key' in config)) {
+    props = config;
+
+// before
+    for (propName in config) {
+      if (
+        hasOwnProperty.call(config, propName) &&
+        // Skip over reserved prop names
+        propName !== 'key' &&
+        (enableRefAsProp || propName !== 'ref')
+      ) {
+        if (enableRefAsProp && !disableStringRefs && propName === 'ref') {
+          props.ref = coerceStringRef(
+            config[propName],
+            ReactCurrentOwner.current,
+            type,
+          );
+        } else {
+          props[propName] = config[propName];
+```
+
+↑ をみると、keyがconfigにない場合（keyがconfigに渡される時はスプレット構文で渡された時）にconfigをそのままpropsとして渡してあげています。そしてそれをこの後にあるReactElementに渡してあげています。
+
+beforeでは毎回configをfor分で回してpropsの名前をチェックしたりしているので、単純にfor分で回すかそのまま代入するかで速度に差がありそうだなということがわかります。
+
+## まとめ
+
+今回はReact19でjsxが高速になると言う話を、[Fast JSX: Don't clone props object #28768](https://github.com/facebook/react/pull/28768)を参考にみていきました。個人的にはReactのjsxがどう動いているか調べるきっかけになりあとはずっとReactって`createElement`を使ってると思っていたらこれがめちゃくちゃ古い知識だったと言うことに反省したりと学びが多かったです。
+
+## 参考
+
+- [Fast JSX: Don't clone props object #28768](https://github.com/facebook/react/pull/28768)
+- [React17におけるJSXの新しい変換を理解する](https://zenn.dev/uhyo/articles/react17-new-jsx-transform)
