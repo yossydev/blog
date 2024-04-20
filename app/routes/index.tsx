@@ -83,7 +83,7 @@ const Posts: FC = () => {
               <h3 class="text-xl my-5 font-bold">{res.year}</h3>
               {res.posts.map(([id, module]) => {
                 return (
-                  <li class="text-lg mt-2 md:mt-1">
+                  <li key={id} class="text-lg mt-2 md:mt-1">
                     <time class="tabular-nums tnum date pr-3">
                       {module.frontmatter.date}
                     </time>
