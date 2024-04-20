@@ -47,7 +47,7 @@ keyはリスト内の要素を一意に識別するためのプロパティで�
 
 ここら辺は[React17におけるJSXの新しい変換を理解する](https://zenn.dev/uhyo/articles/react17-new-jsx-transform)というブログがとてもわかりやすいです。
 
-そして先ほどの二つの関数はそれぞれ[reatc/jsx-runtime](https://github.com/facebook/react/blob/main/packages/react/jsx-runtime.js)からimportして我々開発者も使用することができます。
+そしてjsx関数は[react/jsx-runtime](https://github.com/facebook/react/blob/main/packages/react/jsx-runtime.js)から、createElementはreactからimportして我々開発者も使用することができます。
 
 ```tsx
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
@@ -74,10 +74,9 @@ const Foo = () => {
     </div>
   );
 };
-
 ```
 
-ここで少し謎なのが、PRでは「the new JSX runtime, jsx, is not a public API」と書いてあります。そのため使用できないのかと思いきや普通に使えたし警告も特になかったです。
+ここで少し謎なのが、PRでは「the new JSX runtime, `jsx`, is not a public API」と書いてあります。そのため使用できないのかと思いきや普通に使えたし警告も特になかったです。
 ただコードジャンプしてみにいくと、「You should not use this function directly. Use JSX and a transpiler instead.」と書いてはありました。なので**使えない**ではなく**使ってもこっちは知らないよ**みたいなニュアンスなのかなと感じています。
 
 その一方、`createElement`は使われていることも考慮されているみたいですね。
