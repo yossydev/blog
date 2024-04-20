@@ -7,18 +7,6 @@ on:
   pull_request:
 
 jobs:
-  quality:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup Biome
-        uses: biomejs/setup-biome@v2
-        with:
-          version: latest
-      - name: Run Biome
-        run: biome ci .
-
   deploy:
     needs: quality 
     runs-on: ubuntu-latest
@@ -35,6 +23,8 @@ jobs:
         run: bun install
       - name: Build project
         run: bun run build 
+      - name: biome check
+        run: bun run check:ci 
       - name: Deploy to Cloudflare Pages
         id: cloudflare_pages_deploy
         uses: cloudflare/pages-action@v1
