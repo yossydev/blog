@@ -1,0 +1,50 @@
+---
+title: "weekly blog 4/15 ~ 4/21"
+description: "a"
+date: "2024/04/21"
+published: true
+---
+
+## Intro
+
+## [New in Chrome 124  |  Blog  |  Chrome for Developers](https://developer.chrome.com/blog/new-in-chrome-124?hl=en)
+
+Chrome124がリリースされました。今回は気になったトピックを二つほど載せておきます。
+
+### [Use declarative shadow DOM in JavaScript](https://developer.chrome.com/blog/new-in-chrome-124?hl=en)
+
+まずはShadow DOMのなかで使える`setHTMLUnsafe`と`parseHTMLUnsafe`と言うJavaScriptのAPIが二つ追加されたそうです。
+
+```js
+const section = document.createElement("section");
+section.setHTMLUnsafe(`<my-custom-element>...</my-custom-element>`);
+```
+
+しかし名前に`unsafe`とあるように、まだサニタイズがされない（不正なコードやスクリプトを除去したり、エスケープ処理を行ったりする）そうです。
+
+Shadow DOMもどこかで触らないとです。
+
+### [WebSocket Stream API](https://developer.chrome.com/blog/new-in-chrome-124?hl=en)
+
+次にWebSocketにSteram APIが追加されました。そもそもSteramとは、部分的に処理を行うことを指します。
+
+```js
+const wss = new WebSocketStream(WSS_URL);
+const {readable, writable} = await wss.opened;
+const reader = readable.getReader();
+const writer = writable.getWriter();
+
+while (true) {
+  const {value, done} = await reader.read();
+  if (done) {
+    break;
+  }
+  const result = await process(value);
+  await writer.write(result);
+}
+```
+
+こちらはブログ内にもあったサンプルコードです。`readable.getReader`を呼び出すとSteramが終了するまでこの値からデータを読み取ります。
+`writable.getWriter`でデータの読み書きを行います。
+
+
