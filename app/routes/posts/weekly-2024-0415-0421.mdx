@@ -1,0 +1,70 @@
+---
+title: "weekly blog 4/15 ~ 4/21"
+description: "Chrome 124 / Masonry layout / JSRにNeon Serverless Driverが公開された / TSConfigの設定について"
+date: "2024/04/21"
+published: true
+---
+
+## Intro
+
+## [New in Chrome 124  |  Blog  |  Chrome for Developers](https://developer.chrome.com/blog/new-in-chrome-124?hl=en)
+
+Chrome124がリリースされました。今回は気になったトピックを二つほど載せておきます。
+
+### [Use declarative shadow DOM in JavaScript](https://developer.chrome.com/blog/new-in-chrome-124?hl=en)
+
+まずはShadow DOMのなかで使える`setHTMLUnsafe`と`parseHTMLUnsafe`と言うJavaScriptのAPIが二つ追加されたそうです。
+
+```js
+const section = document.createElement("section");
+section.setHTMLUnsafe(`<my-custom-element>...</my-custom-element>`);
+```
+
+しかし名前に`unsafe`とあるように、まだサニタイズがされない（不正なコードやスクリプトを除去したり、エスケープ処理を行ったりする）そうです。
+
+Shadow DOMもどこかで触らないとです。
+
+### [WebSocket Stream API](https://developer.chrome.com/blog/new-in-chrome-124?hl=en)
+
+次にWebSocketにSteram APIが追加されました。そもそもSteramとは、部分的に処理を行うことを指します。
+
+```js
+const wss = new WebSocketStream(WSS_URL);
+const {readable, writable} = await wss.opened;
+const reader = readable.getReader();
+const writer = writable.getWriter();
+
+while (true) {
+  const {value, done} = await reader.read();
+  if (done) {
+    break;
+  }
+  const result = await process(value);
+  await writer.write(result);
+}
+```
+
+こちらはブログ内にもあったサンプルコードです。`readable.getReader`を呼び出すとSteramが終了するまでこの値からデータを読み取ります。
+`writable.getWriter`でデータの読み書きを行います。
+
+## [Help us invent CSS Grid Level 3, aka “Masonry” layout](https://webkit.org/blog/15269/help-us-invent-masonry-layouts-for-css-grid-level-3/)
+
+<img src="https://github.com/yossydev/blog/assets/87469023/0d511fb2-351c-4881-8dac-33c436299003" alt="https://webkit.org/blog/15269/help-us-invent-masonry-layouts-for-css-grid-level-3に載っている画像です" />
+
+（こちらの画像は[ブログ内](https://webkit.org/blog/15269/help-us-invent-masonry-layouts-for-css-grid-level-3/)にあったものを拝借しています🙇‍♂️）
+
+添付画像のように、要素がそれぞれバラバラなサイズで並ぶUIをMasonry Layoutと呼ぶそうです。そしてその説明と、実際に使ってみて感想を教えて欲しいみたいなのが書いてあります。
+
+## [Announcing the Neon Serverless Driver on JSR](https://deno.com/blog/neon-on-jsr)
+
+JSRに[Neon Serverless Driver](https://jsr.io/@neon/serverless)が公開されたそうです。
+
+npmよりも開発者体験が良くなり、簡単にpostgres環境を構築でき、使ってるランタイムに関係なく早いクエリの実行が可能になるそう。
+
+## [An intro to TSConfig for JavaScript Developers](https://deno.com/blog/intro-to-tsconfig)
+
+tsconfigの設定についてのあれこれ。自分みたいにいつもフレームワーク側がTSを動くように設定をすでにしてくれていて、自分で一からほとんどやったことない民にとっては学びになる内容。
+
+> esModuleInterop - In JavaScript, there are two main module systems: ECMAScript modules (ESM) and CommonJS modules (CJS). They have different syntax and semantics for imports and exports. When working in a TypeScript project that uses both ESM and CJS modules, setting esModuleInterop to true ensures that TypeScript handles imports and exports in a way that is compatible with both module systems. This is recommended if you are working with third party libraries that use both CJS and ESM.
+
+特にこれとか知らなかった👀
