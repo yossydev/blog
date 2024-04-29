@@ -1,0 +1,223 @@
+---
+title: "weekly blog 4/22 ~ 4/28"
+description: "a"
+date: "2024/04/28"
+published: true
+---
+
+## Intro
+
+今週はReact19 Betaのブログと、Node.js v22のリリースがありました。
+
+## [React 19 Beta](https://react.dev/blog/2024/04/25/react-19)
+
+React 19が公開されました。
+
+```shell
+$ npm install react@beta react-dom@beta
+```
+
+とすることで使用可能になるそうです。
+
+簡単に今回のアップデートについてみていきます👀
+
+### [What’s new in React 19](https://react.dev/blog/2024/04/25/react-19#whats-new-in-react-19)
+
+最初にActionsについてです。これはServer Actionsの説明ではなく、useTrantionのようなhooksを使うことができるという紹介です。
+
+```tsx
+function UpdateName({}) {
+  const [name, setName] = useState("");
+  const [error, setError] = useState(null);
+  const [isPending, setIsPending] = useState(false); // 自分でstateを作り、ローディングの状態管理を行う
+
+  const handleSubmit = async () => {
+    setIsPending(true);
+    const error = await updateName(name);
+    setIsPending(false);
+    if (error) {
+      setError(error);
+      return;
+    } 
+    redirect("/path");
+  };
+
+  return (
+    <div>
+      <input value={name} onChange={(event) => setName(event.target.value)} />
+      <button onClick={handleSubmit} disabled={isPending}>
+        Update
+      </button>
+      {error && <p>{error}</p>}
+    </div>
+  );
+}
+
+function UpdateName({}) {
+  const [name, setName] = useState("");
+  const [error, setError] = useState(null);
+  const [isPending, startTransition] = useTransition(); // apiを使い、ローディングの状態管理ができるように
+
+  const handleSubmit = async () => {
+    startTransition(async () => {
+      const error = await updateName(name);
+      if (error) {
+        setError(error);
+        return;
+      } 
+      redirect("/path");
+    })
+  };
+
+  return (
+    <div>
+      <input value={name} onChange={(event) => setName(event.target.value)} />
+      <button onClick={handleSubmit} disabled={isPending}>
+        Update
+      </button>
+      {error && <p>{error}</p>}
+    </div>
+  );
+}
+```
+
+### new Action features in React 19
+
+Next.jsですでに使われているものは紹介不要かと思うので、リンクだけにしておきます。自分は新しいAPIのみ紹介します。
+
+#### [useActionState](https://react.dev/reference/react/useActionState)
+
+```ts
+const [error, submitAction, isPending] = useActionState(async (previousState, newName) => {
+  const error = await updateName(newName);
+  if (error) {
+    // You can return any result of the action.
+    // Here, we return only the error.
+    return error;
+  }
+  
+  // handle success
+});
+```
+
+こちらは以前まで存在していたuseFormStateに新しくpendingが返ってくるように変更されたhooksです。これによるuseFormStateは非推奨になりました。
+
+#### [New hook: useOptimistic](https://react.dev/blog/2024/04/25/react-19#new-hook-optimistic-updates)
+
+```tsx
+function ChangeName({currentName, onUpdateName}) {
+  const [optimisticName, setOptimisticName] = useOptimistic(currentName); 
+
+  const submitAction = async formData => {
+    const newName = formData.get("name");
+    setOptimisticName(newName);
+    const updatedName = await updateName(newName);
+    onUpdateName(updatedName);
+  };
+
+  return (
+    <form action={submitAction}>
+      <p>Your name is: {optimisticName}</p>
+      <p>
+        <label>Change Name:</label>
+        <input
+          type="text"
+          name="name"
+          disabled={currentName !== optimisticName}
+        />
+      </p>
+    </form>
+  );
+}
+```
+
+次に`useOptimistic`についてです。以前からあったのかもしれませんが、自分が知らなかったのでメモとして残しておきます。
+
+optimistic updateとは日本語だと「楽観的更新」みたいな風に直訳するとなります。言葉としてはわかりづらいですが、ようは処理の結果に関係なく見た目を変化させたい時に使うものです。
+
+#### New API: [use](https://react.dev/blog/2024/04/25/react-19#new-feature-use)
+
+```tsx
+// Client Component
+import {use} from 'react';
+
+function Comments({commentsPromise}) {
+  // `use` will suspend until the promise resolves.
+  const comments = use(commentsPromise);
+  return comments.map(comment => <p key={comment.id}>{comment}</p>);
+}
+
+// Server Component
+function Page({commentsPromise}) {
+  // When `use` suspends in Comments,
+  // this Suspense boundary will be shown.
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <Comments commentsPromise={commentsPromise} />
+    </Suspense>
+  )
+}
+```
+
+続いて`use` apiです。これはtanstack queryが公式APIで提供されたというイメージを自分は持っています。
+
+しかし個人的にはデータフェッチはServer Componentで済ませられると思っており、↑ の参考コードもわざわざpropsでpromiseを受け取るようにする必要はあるのかなという気持ちがあります。（これはサンプルなので一つのユースケースとして書いてくれてるだけかと思いますが...）
+
+Client Componentでデータフェッチを行いたい時（SPAなアプリを作る時）に、自前でpromiseとthorwしたりしなくて良いのは便利そうだなと思いました。
+
+#### その他のアップデート
+
+- [React DOM: `<form>` Actions](https://react.dev/blog/2024/04/25/react-19#form-actions)
+  - react-domがformを拡張しているよという話です
+  - actionを使うことでフォーム処理が自動化されます。
+- [React Server Components](https://react.dev/blog/2024/04/25/react-19#react-server-components)
+  - もう言葉はいるまい 
+- [Server Actions](https://react.dev/blog/2024/04/25/react-19#server-actions) 
+  - useActionStateと拡張したformと一緒に使うことが多そう 
+- [ref as a prop](https://react.dev/blog/2024/04/25/react-19#ref-as-a-prop)
+  - refがpropsで受け取れるようになります 
+- [Diffs for hydration errors](https://react.dev/blog/2024/04/25/react-19#ref-as-a-prop)
+  - hidrationのエラーがわかりやすくなったそう
+- [`<Context>` as a provider](https://react.dev/blog/2024/04/25/react-19#context-as-a-provider)
+  - Context APIを使う時は`Context.Provider`で囲む必要がありましたがこのProviderがいらなくなったよという話
+  - Providerは廃止になるそう
+- [Cleanup functions for refs](https://react.dev/blog/2024/04/25/react-19#cleanup-functions-for-refs)
+  - refにクリーンアップが使えるようになった。
+  - 今までは `ref = null` みたいな感じで初期化していた（ような気がする...）
+- [useDeferredValue initial value](https://react.dev/blog/2024/04/25/react-19#use-deferred-value-initial-value)
+  - `useDeferredValue`に初期値が入れれるようになった。
+  - こんなhooksあることを自分は今知りました。
+- [Support for Document Metadata](https://react.dev/blog/2024/04/25/react-19#support-for-metadata-tags)
+  - コンポーネント内にmetadataを入れれるようになった。
+  - 良さそうではあるけどそこらかしこにmetadata書くのはどうなんでしょうか...🧐
+- [Support for stylesheets](https://react.dev/blog/2024/04/25/react-19#support-for-stylesheets)
+  - 以下同文
+
+## [React 19 Beta Upgrade Guide](https://react.dev/blog/2024/04/25/react-19-upgrade-guide)
+
+いろんなAPIが削除されていたりとか、細かい変更などが載っています。
+
+## [Node.js 22 is now available!](https://nodejs.org/en/blog/announcements/v22-release-announce)
+
+Node.js22のアップデート情報です。自分が気になったものをピックアップしていきます。
+
+### Maglev
+
+v8でMaglevというコンパイラが有効になりました。
+
+自分がv8周りの知識が浅いので、[古川さんの資料](https://speakerdeck.com/yosuke_furukawa/node-dot-js-v22-debian-warukoto?slide=17)がとても参考になりました。気になる方はぜひみてみてください！
+
+### Support require()ing synchronous ESM graphs
+
+CJSからESMのコードを読み込めるようになったという話です。
+こちらについては以前自分が要約として[Weekly](https://yossy.dev/posts/weekly-2024-0323)にまとめているのでそちらもご覧ください
+
+## まとめ
+
+無事にアプデについてまとめられました。今回はReactはどういった機能なのかをみただけですが、またどこかでコードを読んでブログにまとめたいものです。
+
+## 関連
+
+- [React 19 Beta](https://react.dev/blog/2024/04/25/react-19)
+- [React 19 Beta Upgrade Guide](https://react.dev/blog/2024/04/25/react-19-upgrade-guide)
+- [Node.js 22 is now available!](https://nodejs.org/en/blog/announcements/v22-release-announce)
