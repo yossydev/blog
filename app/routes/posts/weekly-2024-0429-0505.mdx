@@ -1,0 +1,66 @@
+---
+title: "weekly blog 4/29 ~ 5/5"
+description: "04/29 ~ 05/05の1週間で見た記事や技術をアップデートを書いたブログです"
+date: "2024/05/05"
+published: true
+---
+
+## Intro
+
+今週もやって行きます。GW中ですが関係ありません！🫡
+
+## [MoonBit adds JS backend, up to 25x faster than native JS](https://www.moonbitlang.com/blog/js-support#benchmark-code-execution-speed-exceeds-javascript-by-25-times)
+
+MoonBitがJavaScritpバックエンドをサポートしたという内容です。MoonBitについては少し前の[weekly blog](https://yossy.dev/posts/weekly-0408)で触れているのでよければみてください。
+
+[サンプルコード](https://github.com/moonbit-community/benchmark-202404/tree/master/bench_json5)がわかりやすいですが、moonbitで書いたコードを`moon build --target js`とすることでJavaScriptにビルドし、それを呼び出しています。
+
+Rustの[Iter](https://doc.rust-lang.org/nightly/std/iter/)型のようなものを実装したそうで、複数の処理を一つにまとめられるような処理が書くことができ、こうすることで中間配列の生成が不要になり、処理が高速になるそうです。
+
+```rust
+// sample code
+pub fn task(data: Array[ClassRecord]) -> Int {
+  data.as_iter()
+    .flat_map(fn { it => it.members.as_iter() })
+    .filter(fn => { it => it.gender })
+    .map(fn => { it => @math.minimum(100, it.score + 5)})
+    .map(fn => { it => grade(it)})
+    .filter(fn => { it => it == "A" })
+    .fold(fn => { acc, _ => acc + 1 },  0)
+}
+```
+
+MoonBit、結構良い感じに開発進んでそうなのでブログが出たらまたWeeklyに書きたいと思います🤗
+
+## [JSR の紹介](https://kt3k.github.io/talk_jsr)
+
+5/3に行われたjsr meetupで[@kt3k](https://twitter.com/kt3k)さんが発表したスライドになります。レジストリについての歴史を振り返りつつ、そこからなぜjsrが生まれたのか。jsrとはどんな特徴があるのか。などの話でした。
+
+個人的にはjsrにはパッケージを公開したこともあったりしてなんとなく知識はあったんですが、npmの現状や問題点などは全然知らなかったのでとても面白かったです。
+
+以下が個人的に好きなスライドページです。
+
+- [npmはレガシー](https://kt3k.github.io/talk_jsr/#7)
+- [npm の開発は低調(?)](https://kt3k.github.io/talk_jsr/#8)
+- [jsrチームが考えたこと](https://kt3k.github.io/talk_jsr/#12)
+
+## [How Slack used Deno to save months of engineering effort in launching their new platform](https://deno.com/blog/slack-saves-engineering-effort-with-deno)
+
+Slackの新しいプラットフォームの立ち上げにDenoを使ってとても良かったというブログです。Slackアプリを作る際に多くの設定や定型文をみなければならず、さらにセキュリティもう考慮する必要があった。そのため最初は自前のJSランタイムを作ろうとしていたが、時間がかかってしまう。そんなときにDenoに出会ったそうです。
+
+以下はブログ内のコメントの日本語訳です。
+
+> 導入のしやすさ: Denoは、ポータブルで自己実行可能なバイナリの中に、ネイティブのTypeScriptサポートとWebの標準APIを提供しています。
+> セキュリティ: Denoはデフォルトで安全であり、開発者がエンタープライズグレードのセキュリティを最初から作成できる能力を提供しています。
+> パフォーマンス: V8とRustで構築されたDenoは、複雑なJavaScriptおよびTypeScriptアプリケーションの実行に最適化されています。
+
+## [Hono v4.3.0](https://github.com/honojs/hono/releases/tag/v4.3.0)
+
+Honoのv4.3.0がリリースされました。Reactとの互換性が強くなり、`hono/jsx/dom`の改良によりいくつかのReactライブラリがそのまま動くようになったそうです
+
+## 参考
+
+- [MoonBit adds JS backend, up to 25x faster than native JS](https://www.moonbitlang.com/blog/js-support)
+- [JSR の紹介](https://kt3k.github.io/talk_jsr)
+- [How Slack used Deno to save months of engineering effort in launching their new platform](https://deno.com/blog/slack-saves-engineering-effort-with-deno)
+- [Hono v4.3.0](https://github.com/honojs/hono/releases/tag/v4.3.0)
