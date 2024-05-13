@@ -1,0 +1,47 @@
+---
+title: "weekly blog 5/6 ~ 5/12"
+description: "a"
+date: "2024/05/12"
+published: true
+---
+
+## Intro
+今週は[tskaigi](https://tskaigi.org/)がありました。参加ブログは別で書きます。
+
+## [Node.js の進化に伴い不要となったかもしれないパッケージたち](https://zenn.dev/morinokami/articles/npm-uninstall) 
+
+Node.js22は以前の[weekly blog 4/22 ~ 4/28](https://yossy.dev/posts/weekly-2024-0422-0428)で書きました。
+
+この記事では、今までの開発では使うのが当たり前であったパッケージたちが、Node.jsの進化によって不要になったということ伝えています。
+自分のような新米エンジニア的にはこういった記事は大変嬉しいです！
+
+内容としてはブログを見た方がわかりやすいかと思うので、ぜひそちらを見ていただければと思います。
+以下は簡単に自分の方でメモしたものを貼っておきます。
+
+- node-fetch
+  - ブラウザのfetch apiをnode.jsで使用できるようにするもの
+  - node.jsでfetchが使えるようになったのはv17.5.0 / v16.15.0
+    - [ドキュメント](https://nodejs.org/dist/latest-v18.x/docs/api/globals.html#fetch)を見た感じはv18でフラグが不要で使えるようになってそう👀 
+- dotenv
+  - `env`ファイルから環境変数を読み込むためもの
+  - v20.6.0 で --env-file オプションが追加された 
+- Chalk
+  - ターミナル上に表示する文字列を簡単にスタイリングするためのパッケージ 
+  - CLI 向けのコマンドを作成する際にターミナルに表示する文字列のスタイルを変更するためには`ANSI`エスケープシーケンスを使用するという選択肢がある
+    - エスケープシーケンスを文字列に正確に埋め込みながらコードを書くのは煩雑 
+  - v21.7.0 / v20.12.0で`util.styleText`というapiが追加された
+  - パフォーマンス的にはChalkの方が良い
+  - 初耳だった👀
+- Mocha
+  - テストで使われているのをよく見る👀
+  - v18.0.0 / v16.17.0でテストランナーが入った
+  - v20.0.0以降様々な機能がサポートされた
+- Nodemon
+  - node.jsでホットリロードできるようにするするもの 
+  - `--watch`がv22でstabeになった
+  - エントリーポイント以外のファイルは`--watch-path`で対応
+- glob
+  - globとglobSyncがexperimenalで使えるようになった
+  - まだexperimenalなのですぐの置き換えはできなさそう
+
+
