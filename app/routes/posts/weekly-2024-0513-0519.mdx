@@ -1,0 +1,45 @@
+---
+title: "weekly blog 5/13 ~ 5/19"
+description: "Merging Remix and React Routerについて"
+date: "2024/05/18"
+published: true
+---
+
+## [Merging Remix and React Router](https://remix.run/blog/merging-remix-and-react-router)
+
+Remix v3としてリリースしようとしていた機能をReact Router v7としてリリースする。そしてその理由についてのブログです。
+
+そもそもRemixとは、ReactベースのWeb標準フルスタックフレームワークです。
+このRemixは、Reactの次にReact Routerに依存しています。
+そしてRemixは最近[Viteプラグイン](https://remix.run/blog/remix-vite-stable)の提供と[SPAモードの導入](https://remix.run/docs/en/main/guides/spa-mode)をリリースしましたが、これによりReact RouterとRemixの違いがわからなくなったと書いてあります。
+
+> What we planned to release as Remix v3 is now going to be released as React Router v7.
+
+そして今回の目玉として、Remix v3としてリリース予定だった機能はReact Router v7としてリリースするとのことです。
+
+少しReactの環境構築に関しての歴史的なことも書いています。
+
+Reactの環境構築は、以前まではCRA(Create React App)が使われてきました。
+これはWebpack / Babelの設定を行わずシンプルな方法ですが、CRAはルーターもデータ取得のための方法も提供しませんでした。これはReactのエコシステムから好きなものを開発者が使えるようにするためだそうです。
+そしてCRAで動かしているアプリはルーティングにReact Routerを使用しているそうです。
+
+しかし最近は実質メンテナンスされておらず、現在はViteがReact環境を構築するためデフォルトスタンダードになっています。
+
+以下はQ&A的な内容です。
+
+> What does this mean if I'm currently using Remix?
+
+React Routerにmigrationできるcodemodを提供するそうなのでRemixユーザーはそのまま使い続けて欲しいとのこと。
+
+> As for the Remix brand, it's not going anywhere. We are the Remix team, React Router is a Remix project, and we have really exciting plans beyond React Router we can't wait to talk about. The Remix packages are going to take a little nap. Right now the Remix team is going to be heads down shipping React Router v7 and delivering the smoothest upgrade process we possibly can.
+
+タイトルを見るとRemixがなくなってReact Routerに全部移すのかと思うかもですが、Remixブランドはそのまま健在で、React Routerの新しい機能をRemixの人たちで作るというだけみたいですね。なので少しの間Remixはおやすみするそうです。
+これはRemix側のブログの書き方が少し良くないなと個人的には思っています。
+
+> Basically we got to the point where what we wanted Remix v4 to be was soooo different from Remix we were about to have an Angular 2 moment
+>
+> This allows us to solidify the full React Router story (which Remix was always just a piece of) without disrupting all the Remix users
+> 
+> ref: [https://x.com/BrooksLybrand/status/1790830687735660618](https://x.com/BrooksLybrand/status/1790830687735660618)
+
+これとか見てると、Remix的にはもう次をv4として考えてるみたいなので、Remixが相当変わりそうだなというのはなんとなく伝わりますね👀
