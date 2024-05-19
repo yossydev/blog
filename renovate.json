@@ -1,12 +1,4 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:base", ":disableDependencyDashboard"],
-  "packageRules": [
-    {
-      "matchPackagePatterns": ["*"],
-      "matchUpdateTypes": ["patch"],
-      "groupName": "all patch dependencies",
-      "groupSlug": "all-patch"
-    }
-  ]
+  "extends": ["config:base", ":disableDependencyDashboard"]
 }
