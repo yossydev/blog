@@ -9,10 +9,13 @@ published: true
 
 Google I/Oで発表した内容をブログにまとめてくれたものです。
 
-まずこのブログではさらっと書かれていますが、[Announcing the Web Platform Dashboard](https://web.dev/blog/web-platform-dashboard)で、[Web Platform Dashboard](https://webstatus.dev/)を作ったことが書いてあります。
-これは新しいJavaScriptやCSSが**どのブラウザがどれくらい対応しているのか**がわかりやすくまとまっているサイトになります。そしてこれは[GoogleChrome/webstatus.dev](https://github.com/GoogleChrome/webstatus.dev)で、OSSになっています。
+まずは[Announcing the Web Platform Dashboard](https://web.dev/blog/web-platform-dashboard)で、[Web Platform Dashboard](https://webstatus.dev/)を作ったことが書いてあります。
+これは新しいJavaScriptやCSSが**どのブラウザがどれくらい対応しているのか**がわかりやすくまとまっているサイトになります。
+そしてこれは[GoogleChrome/webstatus.dev](https://github.com/GoogleChrome/webstatus.dev)で、OSSになっています。
 
-I/Oでは12個の機能を紹介したそうです。それぞれ以下です。
+### 12個の機能
+I/Oでは12個の機能を紹介したそうです。
+以下は箇条書きですがそれぞれ記載しました。
 
 - Size container queries
   - 要素のコンテナーのサイズに基づいて要素にスタイル設定を適用することができる
@@ -21,7 +24,7 @@ I/Oでは12個の機能を紹介したそうです。それぞれ以下です。
 - `:has()` selector
   - 引数に入れたタグやクラスがある場合にのみスタイルを適用できるというもの 
 - CSS grid layout subgrid
-  - gridレイアウト内でさらに細かな指定ができるようになった的な認識です。
+  - gridレイアウト内でさらに細かな指定ができるようになった的な認識
   - 抽象的なのは自分があんまりgridレイアウトを使ってこなかったのでわかってない
 - CSS Nesting
   - sassみたいな書き方が標準でできるようになった
@@ -37,7 +40,7 @@ I/Oでは12個の機能を紹介したそうです。それぞれ以下です。
     </video>
     ```
 - The inert attribute
-  - `inert`を指定することで、以下のことを行うそうです。（[MDN](https://developer.mozilla.org/ja/docs/Web/HTML/Global_attributes/inert)から参照）
+  - `inert`を指定することで、以下のことを行うことができる。（[MDN](https://developer.mozilla.org/ja/docs/Web/HTML/Global_attributes/inert)から参照）
     - > ユーザーが要素をクリックしたときに click イベントが発行されないようにします。
     - > 要素にフォーカスが当たらないようにして、 focus イベントが発生することを防ぎます。
     - > 要素およびそのコンテンツをアクセシビリティツリーから除外することで、支援技術から隠します。
@@ -45,7 +48,7 @@ I/Oでは12個の機能を紹介したそうです。それぞれ以下です。
   - 色を混合することができる
 - `:user-valid` and `:user-invalid`
   - フォームの入力で[制約検証](https://developer.mozilla.org/ja/docs/Learn/Forms#constraint_validation)に基づいて有効/無効を判断した結果をCSSで表現可能になった
-  - [MDN]https://developer.mozilla.org/ja/docs/Web/CSS/:user-invalidのサンプルがすごいわかりやすい。とても使えそう。 
+  - [MDN](https://developer.mozilla.org/ja/docs/Web/CSS/:user-invalid)のサンプルがすごいわかりやすい。とても使えそう
 - Compression Streams
   - gzipに圧縮、展開を行うことができるJavaScirpt API 
 - The Declarative Shadow DOM
