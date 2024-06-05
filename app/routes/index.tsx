@@ -1,5 +1,6 @@
 import { type FC, Fragment } from "hono/jsx";
 import { Heading } from "../components/Heading";
+import { rssClient } from "../libs/rss/rss";
 
 export default function Top() {
   return (
@@ -59,13 +60,51 @@ const Posts: FC = () => {
     const blogData = [];
     const thisYear = new Date().getFullYear();
     for (let year = FIRST_BLOG_POST_YEAR; year <= thisYear; year++) {
-      const arrBlog = Object.entries(sortedPosts).filter(([_, module]) => {
-        const postYear = new Date(module.frontmatter.date).getFullYear();
-        return postYear === year;
-      });
+      const arrBlog = Object.entries(sortedPosts)
+        .filter(([_, post]) => {
+          const date = "frontmatter" in post ? post.frontmatter.date : "";
+          const postYear = new Date(date).getFullYear();
+          return postYear === year;
+        })
+        .map(([id, post]) => ({
+          id,
+          date: "frontmatter" in post ? post.frontmatter.date : "",
+          title: "frontmatter" in post ? post.frontmatter.title : "",
+          link: id.replace(/\.mdx$/, "").replace(/\./g, ""),
+          postedIn: "blog",
+        }));
+      const zennPosts = rssClient
+        .find()
+        .filter((post) => {
+          const postYear = new Date(post.date).getFullYear();
+          return postYear === year;
+        })
+        .map((post) => ({
+          id: post.id,
+          date: post.date,
+          title: post.title,
+          link: post.link,
+          postedIn: "zenn",
+        }));
+      const youtubePosts = rssClient
+        .findYoutube()
+        .filter((post) => {
+          const postYear = new Date(post.date).getFullYear();
+          return postYear === year;
+        })
+        .map((post) => ({
+          ...post,
+          postedIn: "youtube",
+        }));
+      const posts = [...arrBlog, ...zennPosts, ...youtubePosts];
+
       blogData.push({
         year: year,
-        posts: arrBlog,
+        posts: posts.sort((a, b) => {
+          const dateA = new Date(a.date).getTime();
+          const dateB = new Date(b.date).getTime();
+          return dateB - dateA;
+        }),
       });
     }
     return blogData;
@@ -82,19 +121,30 @@ const Posts: FC = () => {
               // biome-ignore lint/suspicious/noArrayIndexKey: enable index
               <Fragment key={`${index}`}>
                 <h3 class="text-xl my-5 font-bold">{res.year}</h3>
-                {res.posts.map(([id, module]) => {
+                {res.posts.map(({ id, title, date, link }) => {
                   return (
                     <li key={id} class="text-lg mt-2 md:mt-1">
-                      <time class="tabular-nums tnum date pr-3">
-                        {module.frontmatter.date}
-                      </time>
+                      <time class="tabular-nums tnum date pr-3">{date}</time>
                       <br class="block md:hidden" />
-                      <a
-                        class="text-blue-600 underline"
-                        href={`${id.replace(/\.mdx$/, "").replace(/\./g, "")}`}
-                      >
-                        {module.frontmatter.title}
+                      <a class="text-blue-600 underline" href={link}>
+                        {title}
                       </a>
+
+                      {link.includes("zenn") && (
+                        <img
+                          src="/static/zenn-logo.png"
+                          alt="zenn-logo"
+                          class="ml-2 w-5 h-5 inline"
+                        />
+                      )}
+
+                      {link.includes("youtube") && (
+                        <img
+                          src="/static/Youtube_logo.png"
+                          alt="Youtube_logo"
+                          class="ml-2 w-6 h-4 inline"
+                        />
+                      )}
                     </li>
                   );
                 })}

@@ -12,7 +12,8 @@
     "check": "biome check --apply .",
     "check:ci": "biome ci .",
     "typecheck": "tsc -p . --noEmit",
-    "create:post": "node ./app/libs/posts/generate-post.mjs"
+    "create:post": "node ./app/libs/posts/generate-post.mjs",
+    "update-rss": "node ./app/libs/posts/rss-parser.mjs"
   },
   "dependencies": {
     "@mdx-js/rollup": "^3.0.1",
@@ -21,7 +22,8 @@
     "honox": "^0.1.17",
     "rehype-highlight": "^7.0.0",
     "remark-frontmatter": "^5.0.0",
-    "remark-mdx-frontmatter": "^4.0.0"
+    "remark-mdx-frontmatter": "^4.0.0",
+    "rss-parser": "^3.13.0"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.6.0",
