@@ -1,6 +1,22 @@
 [
   {
     "creator": "ユウト",
+    "title": "React Compilerで出力される_c(<number>)について",
+    "link": "https://zenn.dev/yuto76/articles/d2cbd4d61f7a3a",
+    "pubDate": "Mon, 10 Jun 2024 01:05:50 GMT",
+    "enclosure": {
+      "url": "https://res.cloudinary.com/zenn/image/upload/s--f6HmhNGX--/c_fit%2Cg_north_west%2Cl_text:notosansjp-medium.otf_55:React%2520Compiler%25E3%2581%25A7%25E5%2587%25BA%25E5%258A%259B%25E3%2581%2595%25E3%2582%258C%25E3%2582%258B_c%2528%253Cnumber%253E%2529%25E3%2581%25AB%25E3%2581%25A4%25E3%2581%2584%25E3%2581%25A6%2Cw_1010%2Cx_90%2Cy_100/g_south_west%2Cl_text:notosansjp-medium.otf_37:%25E3%2583%25A6%25E3%2582%25A6%25E3%2583%2588%2Cx_203%2Cy_121/g_south_west%2Ch_90%2Cl_fetch:aHR0cHM6Ly9zdG9yYWdlLmdvb2dsZWFwaXMuY29tL3plbm4tdXNlci11cGxvYWQvYXZhdGFyL2Q4NzFiYTNmNzguanBlZw==%2Cr_max%2Cw_90%2Cx_87%2Cy_95/v1627283836/default/og-base-w1200-v2.png",
+      "length": "0",
+      "type": "image/png"
+    },
+    "dc:creator": "ユウト",
+    "content": "\n Intro\nReact Compilerの出力結果を見ると、const $ = _c(1);というコードを見たことがあると思います。\nこのブログでは、この_c&lt;number&gt;がReact Compiler側でどのように作られているのかをみていきます。\n\n 内容\nhttps://github.com/facebook/react/blob/f5af92d2c47d1e1f455faf912b1d3221d1038c37/compiler/packages/react-compiler-runtime/src/index.ts#L21-L37\n↑ まず実装はこんな感じです。引...",
+    "contentSnippet": "Intro\nReact Compilerの出力結果を見ると、const $ = _c(1);というコードを見たことがあると思います。\nこのブログでは、この_c<number>がReact Compiler側でどのように作られているのかをみていきます。\n\n 内容\nhttps://github.com/facebook/react/blob/f5af92d2c47d1e1f455faf912b1d3221d1038c37/compiler/packages/react-compiler-runtime/src/index.ts#L21-L37\n↑ まず実装はこんな感じです。引...",
+    "guid": "https://zenn.dev/yuto76/articles/d2cbd4d61f7a3a",
+    "isoDate": "2024-06-10T01:05:50.000Z"
+  },
+  {
+    "creator": "ユウト",
     "title": "enableForestを使うことでReact Compilerのメモ化レベルを変更できる",
     "link": "https://zenn.dev/yuto76/articles/e3efbdc0ee212e",
     "pubDate": "Sun, 02 Jun 2024 10:57:55 GMT",
