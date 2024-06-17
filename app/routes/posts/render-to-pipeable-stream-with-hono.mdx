@@ -1,0 +1,66 @@
+---
+title: "renderToPipeableStreamとhonoを組み合わせてssrする"
+description: "基本SSRはフレームワークに頼って実装してきたので、勉強のために自分で実装してみました"
+date: "2024/06/17"
+published: true
+---
+
+## Intro
+
+`renderToPipeableStream`を使ったSSRを行う際のサーバーにHonoを使いました。あんまり調べても記事出てこなくて、[epicweb-dev/react-server-components](https://github.com/epicweb-dev/react-server-components/blob/2e3b78486baa9e04aa078c32430d8390acd32e48/exercises/05.actions/02.problem.client/server/app.js)をみてました。
+
+果たしてこんな実装を今時する方がどれくらいいるかは知りませんがメモ程度に残しておきます。
+
+[https://github.com/yossydev/renderToPipeableStream-with-hono](https://github.com/yossydev/renderToPipeableStream-with-hono)というリポジトリに実装コードはあります。
+
+## `renderToPipeableStream`について
+
+Node.jsのstream apiを使用し、Streming SSRを実現するAPI。
+ランタイムがNode.jsに依存しているので、Denoなどの他のランタイムで動かしたい場合は`renderToReadableStream`を使用する。
+
+## 説明
+
+自分は今回webpackを使用しました。その辺りの説明は今回は省きます。
+
+server用のコードは以下のようになっています。
+
+```js
+import { Hono } from "hono";
+import React from "react";
+import ReactDOMServer from "react-dom/server";
+import App from "../client/App";
+import Layout from "../client/HTML";
+import { serve } from "@hono/node-server";
+import { RESPONSE_ALREADY_SENT } from "@hono/node-server/utils/response";
+import { serveStatic } from "@hono/node-server/serve-static";
+
+const app = new Hono();
+
+app.use("/*", serveStatic({ root: "./dist", index: "" }));
+
+app.get("/*", (c) => {
+  const { pipe } = ReactDOMServer.renderToPipeableStream(
+    <Layout>
+      <App />
+    </Layout>,
+    {
+      onShellReady() {
+        c.status = 200;
+        c.header("Content-type", "text/html");
+        pipe(c.env.outgoing);
+      },
+      onShellError() {
+        c.status = 500;
+        c.body("<!doctype html><p>Loading...</p>");
+      },
+    },
+  );
+  return RESPONSE_ALREADY_SENT;
+});
+
+serve({ fetch: app.fetch, port: 3002 }, (info) => {
+  console.log(`Listening on ${info.address}:${info.port}`);
+});
+
+export default app;
+```
