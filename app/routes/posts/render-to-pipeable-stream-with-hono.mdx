@@ -1,0 +1,161 @@
+---
+title: "renderToPipeableStreamとHonoを組み合わせてSSRをする"
+description: "基本SSRはフレームワークに頼って実装してきたので、勉強のために自分で実装してみました"
+date: "2024/06/23"
+published: true
+---
+
+## Intro
+
+`renderToPipeableStream`を使ったSSRを行う際のサーバーにHonoを使いました。あんまり調べても記事出てこなくて、[epicweb-dev/react-server-components](https://github.com/epicweb-dev/react-server-components/blob/2e3b78486baa9e04aa078c32430d8390acd32e48/exercises/05.actions/02.problem.client/server/app.js#L46-L57)をみてました。
+果たしてこんな実装を今時する方がどれくらいいるかは知りませんがメモ程度に残しておきます。
+
+[https://github.com/yossydev/renderToPipeableStream-with-hono](https://github.com/yossydev/renderToPipeableStream-with-hono)というリポジトリに実装コードはあります。
+
+## `renderToPipeableStream`
+
+ReactのコンポーネントをStreamで返すようにできるAPIです。
+Node.jsに依存しているので、Denoなどの他のランタイムで動かしたい場合は`renderToReadableStream`を使用します。
+
+## 内容
+
+自分が実装したサーバー側のコードは以下のようになっています。これを元にどのように実装したかを見ていきます。
+`renderToPipeableStream`の第一引数に渡しているのは本当にただのコンポーネントなのでここら辺の説明は省きます。
+
+
+```js
+import { Hono } from "hono";
+import React from "react";
+import ReactDOMServer from "react-dom/server";
+import App from "../client/App";
+import Layout from "../client/HTML";
+import { serve } from "@hono/node-server";
+import { RESPONSE_ALREADY_SENT } from "@hono/node-server/utils/response";
+import { serveStatic } from "@hono/node-server/serve-static";
+
+const app = new Hono();
+
+app.use("/*", serveStatic({ root: "./dist", index: "" }));
+
+app.get("/*", (c) => {
+	const { pipe } = ReactDOMServer.renderToPipeableStream(
+		<Layout>
+			<App />
+		</Layout>,
+	);
+	pipe(c.env.outgoing);
+	return RESPONSE_ALREADY_SENT;
+});
+
+serve({ fetch: app.fetch, port: 3002 }, (info) => {
+	console.log(`Listening on ${info.address}:${info.port}`);
+});
+
+export default app;
+```
+
+### [serveStatic](https://github.com/honojs/node-server?tab=readme-ov-file#serve-static-middleware)
+
+```
+my-hono-project/
+  src/
+    index.ts
+  static/
+    index.html
+```
+
+↑ アプリケーションを実行する際に動かすのはindex.tsではなくindex.htmlになるので、それを使用するように設定します。
+
+### PipeableStreamの型を見る
+
+`renderToPipeableStream`の返り値の型としては以下のようになっています。
+
+```ts
+type PipeableStream = {
+  // Cancel any pending I/O and put anything remaining into
+  // client rendered mode.
+  abort(reason: mixed): void,
+  pipe<T: Writable>(destination: T): T,
+};
+```
+
+pipeには`Writable`が型定義されています。個人的にはなんでジェネリクスでわざわざ定義しているのかがわかってなくて、型を拡張させるユースケースが果たしてあるのかという気持ちと、この関数はNode.js上でしか動かないと思っているのでそのまま型をつけてあげればいいのでは思ったりしています👀
+
+少し話が逸れたので戻すと、pipeの引数にはnode.jsのstreamを渡してあげれば動く気配がしています。
+
+### Honoでnode.jsのapiにアクセスする
+
+> pipe関数の引数にはnode.jsのstreamを渡してあげれば動く
+
+これを実現するためにはnode.jsのapiにアクセスする必要があります。Honoでは`c.env.outgoing`で実現することができます。
+ref: [https://hono.dev/docs/getting-started/nodejs#access-the-raw-node-js-apis](https://hono.dev/docs/getting-started/nodejs#access-the-raw-node-js-apis)
+
+```js
+pipe(c.env.outgoing);
+```
+
+つまりこんな感じになります。
+
+### `RESPONSE_ALREADY_SENT`
+
+最後にRESPONSE_ALREADY_SENTをreturnします。
+
+```ts
+import { X_ALREADY_SENT } from './response/constants'
+export const RESPONSE_ALREADY_SENT = new Response(null, {
+  headers: { [X_ALREADY_SENT]: 'true' },
+})
+```
+
+実装はシンプルで、何かしらreturnしないといけないのでheadersに`[X_ALREADY_SENT]: 'true'`を追加してレスポンスしているだけのようですね。
+ref: [https://github.com/honojs/node-server?tab=readme-ov-file#direct-response-from-nodejs-api](https://github.com/honojs/node-server?tab=readme-ov-file#direct-response-from-nodejs-api)
+
+ちなみにこれは
+
+```ts
+export const createAdaptorServer = (options: Options): ServerType => {
+  const fetchCallback = options.fetch
+  const requestListener = getRequestListener(fetchCallback, {
+    hostname: options.hostname,
+    overrideGlobalObjects: options.overrideGlobalObjects,
+  })
+  // ts will complain about createServerHTTP and createServerHTTP2 not being callable, which works just fine
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const createServer: any = options.createServer || createServerHTTP
+  const server: ServerType = createServer(options.serverOptions || {}, requestListener)
+  return server
+}
+
+export const serve = (
+  options: Options,
+  listeningListener?: (info: AddressInfo) => void
+): ServerType => {
+  const server = createAdaptorServer(options)
+  server.listen(options?.port ?? 3000, options.hostname ?? '0.0.0.0', () => {
+    const serverInfo = server.address() as AddressInfo
+    listeningListener && listeningListener(serverInfo)
+  })
+  return server
+}
+```
+
+↑ この`serve`関数を呼び出した際に`createAdaptorServer` → `getRequestListener`が実行されて、そしてその中に
+
+```js
+} else if (resHeaderRecord[X_ALREADY_SENT]) {
+  // do nothing, the response has already been sent
+```
+
+という処理があって、「X_ALREADY_SENTが付与されていれば何も実行しない」という実装になっているみたいですね。
+
+## まとめ
+
+大体こんな感じです。自分のStreamに関する知識が乏しいのでもしかしたら間違っているかもしれないですが、その時はぜひご指定いただけますと幸いです。
+
+## 関連
+
+- [https://ja.react.dev/reference/react-dom/server/renderToPipeableStream](https://ja.react.dev/reference/react-dom/server/renderToPipeableStream)
+- [https://hono.dev/docs/getting-started/nodejs](https://hono.dev/docs/getting-started/nodejs)
+- [https://hono.dev/docs/getting-started/nodejs#access-the-raw-node-js-apis](https://hono.dev/docs/getting-started/nodejs#access-the-raw-node-js-apis)
+- [https://github.com/honojs/node-server?tab=readme-ov-file#direct-response-from-nodejs-api](https://github.com/honojs/node-server?tab=readme-ov-file#direct-response-from-nodejs-api)
+ 
