@@ -1,6 +1,22 @@
 [
   {
     "creator": "ユウト",
+    "title": "BiomeがforEachではなくfor...ofを推す理由を処理速度の観点から見る",
+    "link": "https://zenn.dev/yuto76/articles/de337b014b1158",
+    "pubDate": "Sat, 29 Jun 2024 03:38:55 GMT",
+    "enclosure": {
+      "url": "https://res.cloudinary.com/zenn/image/upload/s--kC-DxQ8x--/c_fit%2Cg_north_west%2Cl_text:notosansjp-medium.otf_55:Biome%25E3%2581%258CforEach%25E3%2581%25A7%25E3%2581%25AF%25E3%2581%25AA%25E3%2581%258Ffor...of%25E3%2582%2592%25E6%258E%25A8%25E3%2581%2599%25E7%2590%2586%25E7%2594%25B1%25E3%2582%2592%25E5%2587%25A6%25E7%2590%2586%25E9%2580%259F%25E5%25BA%25A6%25E3%2581%25AE%25E8%25A6%25B3%25E7%2582%25B9%25E3%2581%258B%25E3%2582%2589%25E8%25A6%258B%25E3%2582%258B%2Cw_1010%2Cx_90%2Cy_100/g_south_west%2Cl_text:notosansjp-medium.otf_37:%25E3%2583%25A6%25E3%2582%25A6%25E3%2583%2588%2Cx_203%2Cy_121/g_south_west%2Ch_90%2Cl_fetch:aHR0cHM6Ly9zdG9yYWdlLmdvb2dsZWFwaXMuY29tL3plbm4tdXNlci11cGxvYWQvYXZhdGFyL2Q4NzFiYTNmNzguanBlZw==%2Cr_max%2Cw_90%2Cx_87%2Cy_95/v1627283836/default/og-base-w1200-v2.png",
+      "length": "0",
+      "type": "image/png"
+    },
+    "dc:creator": "ユウト",
+    "content": "\n Intro\nbiomeにはforEachを使用すると、for...ofを使用するようにエラーが出ます。これはnoForEachというrecommendedルールによるものです。\nhttps://biomejs.dev/linter/rules/no-for-each/\n今回はなぜfor...ofを使うように推奨しているのかを、処理速度の観点で見ていきます。\n\n Performance\nドキュメントには以下のように記載されています。\n\nPerformance: Using forEach can lead to performance issues, especially when w...",
+    "contentSnippet": "Intro\nbiomeにはforEachを使用すると、for...ofを使用するようにエラーが出ます。これはnoForEachというrecommendedルールによるものです。\nhttps://biomejs.dev/linter/rules/no-for-each/\n今回はなぜfor...ofを使うように推奨しているのかを、処理速度の観点で見ていきます。\n\n Performance\nドキュメントには以下のように記載されています。\n\nPerformance: Using forEach can lead to performance issues, especially when w...",
+    "guid": "https://zenn.dev/yuto76/articles/de337b014b1158",
+    "isoDate": "2024-06-29T03:38:55.000Z"
+  },
+  {
+    "creator": "ユウト",
     "title": "React Compilerで出力されるc(number)について",
     "link": "https://zenn.dev/yuto76/articles/d2cbd4d61f7a3a",
     "pubDate": "Mon, 10 Jun 2024 01:05:50 GMT",
