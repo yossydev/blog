@@ -36,5 +36,6 @@ export default defineConfig(({ mode }) => {
       }),
       ssg({ entry }),
     ],
+    optimizeDeps: {},
   };
 });

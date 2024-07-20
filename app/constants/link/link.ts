@@ -8,4 +8,5 @@ export const LINK = {
   ZENN: "https://zenn.dev/yuto76",
   AMAZON: "https://www.amazon.jp/hz/wishlist/ls/XSPLZ7OVMR3M?ref_=wl_share",
   YOUTUBE: "https://www.youtube.com/@yossydev",
+  SPEAKERDECK: "https://speakerdeck.com/yossydev",
 };
