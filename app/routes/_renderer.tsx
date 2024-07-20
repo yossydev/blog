@@ -38,11 +38,25 @@ export default jsxRenderer(({ children, title, description }) => {
               Yuto Blog
             </a>
             <div class="flex items-center gap-4">
+              <a href={"/slides"}>
+                <img
+                  src="/static/speaker-deck-logo.png"
+                  alt="speaker-deck-icon"
+                  class="w-8 h-5"
+                />
+              </a>
+              <a href={"/youtube"}>
+                <img
+                  src="/static/youtube-svgrepo-com.svg"
+                  alt="youtube-icon"
+                  class="w-9 h-9"
+                />
+              </a>
               <a href={LINK.RSS} target={"_blank"} rel={"noreferrer"}>
                 <img
                   src="/static/rss-svgrepo-com.svg"
                   alt="rss-icon"
-                  class="w-9 h-9"
+                  class="w-8 h-8"
                 />
               </a>
               <a href={LINK.X} target={"_blank"} rel={"noreferrer"}>
@@ -57,13 +71,6 @@ export default jsxRenderer(({ children, title, description }) => {
                   src="/static/github.svg"
                   alt="github-icon"
                   class="w-7 h-7 text-white"
-                />
-              </a>
-              <a href={LINK.YOUTUBE} target={"_blank"} rel={"noreferrer"}>
-                <img
-                  src="/static/youtube-svgrepo-com.svg"
-                  alt="youtube-icon"
-                  class="w-9 h-9"
                 />
               </a>
             </div>

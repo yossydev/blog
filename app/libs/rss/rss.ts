@@ -1,4 +1,5 @@
 import zennRss from "./data.json";
+import speakerdeckRss from "./speakerdeck.json";
 import youtubeRss from "./youtube.json";
 
 function formatDate(utcDate: string) {
@@ -22,6 +23,15 @@ export const rssClient = {
   findYoutube() {
     return youtubeRss.map((item) => ({
       id: item.id,
+      title: item.title,
+      date: formatDate(item.isoDate),
+      link: item.link,
+    }));
+  },
+
+  findSpeakerdeck() {
+    return speakerdeckRss.map((item) => ({
+      id: item.guid,
       title: item.title,
       date: formatDate(item.isoDate),
       link: item.link,

@@ -8,8 +8,8 @@ export default function Top() {
       <Heading title="Hi! I'm Yuto" />
       <div class="mt-5">
         <p class="font-medium">
-          都内在住の技術好きなエンジニアです。Web / OSS開発 / developer
-          experienceの向上に興味があります。
+          都内在住の技術好きなエンジニアです。Rust / OSS / Developer
+          Experienceの向上に興味があります。
           <span class="ml-1">
             <a
               href="/profile"
@@ -86,17 +86,7 @@ const Posts: FC = () => {
           link: post.link,
           postedIn: "zenn",
         }));
-      const youtubePosts = rssClient
-        .findYoutube()
-        .filter((post) => {
-          const postYear = new Date(post.date).getFullYear();
-          return postYear === year;
-        })
-        .map((post) => ({
-          ...post,
-          postedIn: "youtube",
-        }));
-      const posts = [...arrBlog, ...zennPosts, ...youtubePosts];
+      const posts = [...arrBlog, ...zennPosts];
 
       blogData.push({
         year: year,
