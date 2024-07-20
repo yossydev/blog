@@ -1,24 +1,38 @@
 ---
-title: "Tanstack QueryのuseSuspenceQueryでqueryを実行したくない時はどのようにするか"
-description: "hooks自体を条件分岐することは制約上不可能で、useSuspenceQueryにはuseQueryにはenbaledオプションもありません。そのあたりに注意しuseSuspenceQueryは使わなくてはなりません。"
+title: "Tanstack QueryのuseSuspenceQueryでクエリを実行したくない時はどのようにするか"
+description: "hooks自体を条件分岐することは制約上不可能で、useSuspenceQueryにはuseQueryにはenbaledオプションもありません。ではuseSuspenceQueryではどのようにして実行の制御を行うか。ということについて書きました。"
 date: "2024/07/21"
 published: true
 ---
 
 ## Intro
 
-業務でTanstack Queryを使っている際に[useSuspenceQuery](https://tanstack.com/query/latest/docs/framework/react/reference/useSuspenseQuery)を初めて使用しました。
-これを使用することでコンポーネントがPromiseを返すようになり、ReactのSuspenceを使うことができるようになります。
+業務でTanstack Queryを使っているんですが、そこで初めて[useSuspenceQuery](https://tanstack.com/query/latest/docs/framework/react/reference/useSuspenseQuery)を使用しました。
+このhooksを使用することでコンポーネントがPromiseを返すようになり、ReactのSuspenceを使ってfallbackを返すことができるようになります。
 
-とても便利なhooksですが、少し自分が悩んだポイントがあったので、今回はそのことについて書きます。
+とても便利なhooksですが、**条件によって実行したくない**というケースで少し悩んだポイントがあったので、今回はそのことについて書きます。
 
-## Tanstack QueryのSuspence紹介
+## 話さないこと
 
-最初に今回は[useSuspenceQuery](https://tanstack.com/query/latest/docs/framework/react/reference/useSuspenseQuery)を使って書いていますが、Suspence系のhooksは全部で3つあるということだけ言っておきます。 [useSuspenceQuery](https://tanstack.com/query/latest/docs/framework/react/reference/useSuspenseQuery) [useSuspenseInfiniteQuery](https://tanstack.com/query/latest/docs/framework/react/reference/useSuspenseInfiniteQuery) [useSuspenseQueries](https://tanstack.com/query/latest/docs/framework/react/reference/useSuspenseQueries)
+今回は以下については話さないです。
+
+- enabled以外のオプションについて
+- useSuspenceQueryやuseQueryの使い方
+- SuspenceのようなReactのAPIについての紹介
+
+また、記事の中に書いた参考コードはあくまでも参考程度でお願いします🙇‍♂️
+
+## Tanstack QueryのSuspence系のhooks紹介
+
+最初に今回は[useSuspenceQuery](https://tanstack.com/query/latest/docs/framework/react/reference/useSuspenseQuery)を使って記事を書いていますが、Suspence系のhooksは全部で3つあります。 
+
+- [useSuspenceQuery](https://tanstack.com/query/latest/docs/framework/react/reference/useSuspenseQuery) 
+- [useSuspenseInfiniteQuery](https://tanstack.com/query/latest/docs/framework/react/reference/useSuspenseInfiniteQuery) 
+- [useSuspenseQueries](https://tanstack.com/query/latest/docs/framework/react/reference/useSuspenseQueries)
 
 ## useQueryでqueryを実行しない
 
-[useQuery](https://tanstack.com/query/latest/docs/framework/react/reference/useQuery)のオプションの一つとして、`enabled`があります。これを使用することでhooksの実行を制御できるようになります（Set this to false to disable this query from automatically running.）
+[useQuery](https://tanstack.com/query/latest/docs/framework/react/reference/useQuery)のオプションの一つとして、`enabled`があります。このオプションを使用することで、hooksの実行を制御できるようになります。
 
 [Playground](https://tanstack.com/query/latest/docs/framework/react/examples/playground)で試してみたところ、実際にqueryは実行されず、statusは`pending`のままでした。
 
@@ -51,7 +65,7 @@ hooks自体に条件分岐ができない以上、このオプションはとて
 
 ## useSuspenceQueryでqueryを実行しない方法
 
-では次にuseSuspenceQueryを見ていきます。同じようにenabledオプションを使いたいですが、ドキュメントには以下のように書かれています。
+では次にuseSuspenceQueryを見ていきます。同じようにenabledオプションを使用したいですが、ドキュメントには以下のように書かれています。
 
 > The same as for useQueries, except that each query can't have:
 > - suspense
@@ -59,7 +73,7 @@ hooks自体に条件分岐ができない以上、このオプションはとて
 > - enabled
 > - placeholderData 
 
-そうです。useSuspenceQueryではenabledオプションは使用できないようになっています。
+そうです。`useSuspenceQuery`ではenabledオプションは使用できないようになっています。
 
 ### useSuspenceQueryではなぜenabledオプションが使えないのか
 
@@ -106,10 +120,9 @@ function ParentComponent({ shouldFetch }: { shouldFetch: boolean }) {
 }
 
 function ChildComponent1() {
-  const data = useQuery({
+  const data = useSuspenseQuery({
     queryKey: ['something', param],
     queryFn: () => fetchSomething(param),
-    suspense: true,
   });
 
   return <div>{data}</div>;
@@ -140,8 +153,10 @@ queryFnで条件分岐し、trueであればapiを叩き、そうでなければ
 ## まとめ
 
 enabledオプション、実装中の時はなぜないのかという気持ちでしたが、立ち止まって考えると納得できる理由がありしっくりきました。
-あまりTanstack Queryを使いこなせている自信はないので、もっと使い込んでいきたいです。
+自分はあまりTanstack Queryを使いこなせている自信はないので、もっと使い込んでいきたいです。
 
 ## 関連
 
+- [useSuspenceQuery](https://tanstack.com/query/latest/docs/framework/react/reference/useSuspenseQuery) 
 - [useSuspenseQuery and enabled v5](https://github.com/TanStack/query/discussions/6206) 
+
