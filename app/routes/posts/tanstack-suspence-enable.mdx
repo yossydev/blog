@@ -1,0 +1,161 @@
+---
+title: "Tanstack QueryのuseSuspenceQueryでクエリを実行したくない時はどのようにするか"
+description: "hooks自体を条件分岐することは制約上不可能で、useSuspenceQueryにはuseQueryにはenbaledオプションもありません。ではuseSuspenceQueryではどのようにして実行の制御を行うか。ということについて書きました。"
+date: "2024/07/21"
+published: true
+---
+
+## Intro
+
+業務でTanstack Queryを使っているんですが、そこで初めて[useSuspenceQuery](https://tanstack.com/query/latest/docs/framework/react/reference/useSuspenseQuery)を使用しました。
+このhooksを使用することでコンポーネントがPromiseを返すようになり、ReactのSuspenceを使ってfallbackのUIを表示することができます。
+
+とても便利なhooksですが、**条件によって実行したくない**というケースで少し悩んだポイントがあったので、今回はそのことについて書きます。
+
+## 話さないこと
+
+今回は以下については話さないです。
+
+- enabled以外のオプションについて
+- useSuspenceQueryやuseQueryの使い方
+- SuspenceのようなReactのAPIについての紹介
+
+また、記事の中に書いた参考コードはあくまでも参考程度でお願いします🙇‍♂️
+
+## Tanstack QueryのSuspence系のhooks紹介
+
+最初に今回は[useSuspenceQuery](https://tanstack.com/query/latest/docs/framework/react/reference/useSuspenseQuery)を使って記事を書いていますが、Suspence系のhooksは全部で3つあります。 
+
+- [useSuspenceQuery](https://tanstack.com/query/latest/docs/framework/react/reference/useSuspenseQuery) 
+- [useSuspenseInfiniteQuery](https://tanstack.com/query/latest/docs/framework/react/reference/useSuspenseInfiniteQuery) 
+- [useSuspenseQueries](https://tanstack.com/query/latest/docs/framework/react/reference/useSuspenseQueries)
+
+## useQueryでクエリを実行しない方法
+
+[useQuery](https://tanstack.com/query/latest/docs/framework/react/reference/useQuery)のオプションの一つとして、`enabled`があります。このオプションを使用することで、hooksの実行を制御できるようになります。
+
+[Playground](https://tanstack.com/query/latest/docs/framework/react/examples/playground)で試してみたところ、実際にqueryは実行されず、statusは`pending`のままでした。
+
+```tsx
+  const { status, data, isFetching, error, failureCount, refetch } = useQuery({
+    queryKey: ['todos', { filter }],
+    queryFn: fetchTodos,
+    enabled: false, // falseにするとqueryは実行されない
+  });
+
+  return (
+      {status === 'pending' ? (
+        <span>Loading... (Attempt: {failureCount + 1})</span>
+      ) : status === 'error' ? (
+        <span>
+          Error: {error.message}
+          <br />
+          <button onClick={() => refetch()}>Retry</button>
+        </span>
+      ) : (
+        <ul>
+          ...other
+        </ul>
+      )}
+  );
+}
+```
+
+hooks自体に条件分岐ができない以上、このオプションはとても便利だなと筆者は感じました。
+
+## useSuspenceQueryでクエリを実行しない方法
+
+では次にuseSuspenceQueryを見ていきます。同じようにenabledオプションを使用したいですが、ドキュメントには以下のように書かれています。
+
+> The same as for useQueries, except that each query can't have:
+> - suspense
+> - throwOnError
+> - enabled
+> - placeholderData 
+
+そうです。`useSuspenceQuery`ではenabledオプションは使用できないようになっています。
+
+### useSuspenceQueryではなぜenabledオプションが使えないのか
+
+[useSuspenseQuery and enabled v5](https://github.com/TanStack/query/discussions/6206)というディスカッションがあり、ここで作者の方は以下のようにコメントしています。
+
+> enabled is not included because one of the main expectations of suspense is that if you call useSuspenseQuery, data will be T, not T | undefined, because loading states are handled by suspense and errors by error boundaries. That's not the case if we allow to disable a query. Further, you don't need it for dependent queries, because with suspense, queries run in serial anyways. If you need enabled to wait for user input, component composition is the way to go (splitting components up)
+> <br/>
+> 日本語訳: suspenseを使用する主な期待の1つは、useSuspenseQueryを呼び出すと、ローディング状態はsuspenseによって処理され、エラーはエラーバウンダリーによって処理されるため、データがT | undefinedではなくTになることです。クエリを無効にすることを許可する場合、これは当てはまりません。さらに、依存クエリにはenabledは必要ありません。なぜなら、suspenseを使用する場合、クエリはシリアルに実行されるからです。ユーザー入力を待つためにenabledが必要な場合は、コンポーネントの構成（コンポーネントの分割）が解決策です。
+
+(一応わかりやすいように日本語訳も追記しておきました。)
+
+つまり、**`enabled`が不要な理由は以下の二つが理由である**ということがわかりました。
+
+- SuspenceやError Boundaryを使うことでデータを`T`として扱うことができるはずが、enbaledを使うことで`undefined`な可能性が生まれてしまう
+- SuspenceにPromiseが返るとそれ以降のコンポーネントのレンダリングはストップするので、コンポーネントの分割をすれば良い
+
+筆者としては、SuspenceとError BoundaryというReactの機能にうまく乗っかれている気がするので理由としては納得しました。
+
+### 実行させたくない時にはどのようにするのか
+
+アプリケーションを開発していると、実際に発火させたくないことはケースとしてあると思います。やり方は二つパターンがあるかなと思います。
+
+#### 1. コンポーネントを分割する
+
+先ほどの例でもできてきたように、コンポーネントを適切に分割する方法です。以下は参考コードです。
+
+```tsx
+import React, { Suspense } from 'react';
+import { useQuery } from '@tanstack/react-query';
+
+function ParentComponent({ shouldFetch }: { shouldFetch: boolean }) {
+  return (
+    <div>
+      {shouldFetch ? (
+        <Suspense fallback={<div>Loading...</div>}>
+          <ChildComponent1 />
+        </Suspense>
+      ) : (
+        <div>Data fetching is disabled</div>
+      )}
+      <ChildComponent2 />
+    </div>
+  );
+}
+
+function ChildComponent1() {
+  const data = useSuspenseQuery({
+    queryKey: ['something', param],
+    queryFn: () => fetchSomething(param),
+  });
+
+  return <div>{data}</div>;
+}
+
+function ChildComponent2() {
+  return <div>Child Component 2</div>;
+}
+```
+
+`shouldFetch`のところが、例えば空文字だったら〜みたいな条件式に変わると思います。
+基本的にはこれで問題なく、理想としてはこれがいいのかと思いますが、その分コンポーネントの量が増えるので、全てこれで対応するのは少し厳しいのではと思っています。
+
+#### 2. queryFn内で条件分岐を行う
+
+[useSuspenseQuery and enabled v5](https://github.com/TanStack/query/discussions/6206)で紹介されているやり方です。以下は参考コードです。
+
+```ts
+useSuspenseQuery({
+  queryKey['something', param],
+  queryFn: () => param ? fetchSomething(param) : null,
+})
+```
+
+queryFnで条件分岐しtrueであればapiを叩き、そうでなければnullを返るようにする処理にしています。
+こちらであれば処理をhooksに閉じ込められるので、コンポーネント量が増える問題は回避できそうで筆者としては好みです。
+
+## まとめ
+
+enabledオプション、実装中の時はなぜないのかという気持ちでしたが、立ち止まって考えると納得できる理由がありしっくりきました。
+自分はあまりTanstack Queryを使いこなせている自信はないので、もっと使い込んでいきたいです。
+
+## 関連
+
+- [useSuspenceQuery](https://tanstack.com/query/latest/docs/framework/react/reference/useSuspenseQuery) 
+- [useSuspenseQuery and enabled v5](https://github.com/TanStack/query/discussions/6206) 
