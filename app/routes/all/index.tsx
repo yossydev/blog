@@ -1,6 +1,6 @@
 import { Fragment } from "hono/jsx";
-import { rssClient } from "../../libs/rss/rss";
 import { Heading } from "../../components/Heading";
+import { rssClient } from "../../libs/rss/rss";
 
 type PostEntry = {
   [key: string]: {
