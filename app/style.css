@@ -9,6 +9,10 @@
   min-height: 100vh;
 }
 
+@view-transition {
+  navigation: auto;
+}
+
 .markdown {
   @apply text-gray-900 leading-normal break-words;
 }
@@ -276,4 +280,3 @@
 .toc-level-4 {
   @apply pl-8;
 }
-
