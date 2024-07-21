@@ -85,7 +85,7 @@ hooks自体に条件分岐ができない以上、このオプションはとて
 
 (一応わかりやすいように日本語訳も追記しておきました。)
 
-**つまり`enabled`が不要な理由は以下の二つが理由であるとわかりました。**
+つまり、**`enabled`が不要な理由は以下の二つが理由である**ということがわかりました。
 
 - SuspenceやError Boundaryを使うことでデータを`T`として扱うことができるはずが、enbaledを使うことで`undefined`な可能性が生まれてしまう
 - SuspenceにPromiseが返るとそれ以降のコンポーネントのレンダリングはストップするので、コンポーネントの分割をすれば良い
@@ -134,7 +134,7 @@ function ChildComponent2() {
 ```
 
 `shouldFetch`のところが、例えば空文字だったら〜みたいな条件式に変わると思います。
-基本的にはこれで問題ないかと思いますが、その分コンポーネントの量が増えるので、全てこれで対応するのは少し厳しいのではと思っています。
+基本的にはこれで問題なく、理想としてはこれがいいのかと思いますが、その分コンポーネントの量が増えるので、全てこれで対応するのは少し厳しいのではと思っています。
 
 #### 2. queryFn内で条件分岐を行う
 
@@ -147,7 +147,7 @@ useSuspenseQuery({
 })
 ```
 
-queryFnで条件分岐し、trueであればapiを叩き、そうでなければnullを返るようにする処理にしています。
+queryFnで条件分岐しtrueであればapiを叩き、そうでなければnullを返るようにする処理にしています。
 こちらであれば処理をhooksに閉じ込められるので、コンポーネント量が増える問題は回避できそうで筆者としては好みです。
 
 ## まとめ
@@ -159,4 +159,3 @@ enabledオプション、実装中の時はなぜないのかという気持ち�
 
 - [useSuspenceQuery](https://tanstack.com/query/latest/docs/framework/react/reference/useSuspenseQuery) 
 - [useSuspenseQuery and enabled v5](https://github.com/TanStack/query/discussions/6206) 
-
