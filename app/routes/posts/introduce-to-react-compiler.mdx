@@ -1,0 +1,133 @@
+---
+title: "WIP 'Introduce to React Compiler' blog."
+description: "8/4の若手エンジニアLT&交流会で発表したIntroduce to React Compilerの日本語ブログです。"
+date: "2024/08/04"
+published: false
+---
+
+## Intro
+
+このブログは、[若手エンジニアLT & 交流会]というイベントで発表した[Introduce to React Compiler]()という資料の日本語ブログです。
+資料は基本英語なので、翻訳だと思っていただければ大丈夫です。
+
+## 話さないこと
+
+今回は以下のことについては話さないです。
+
+- Compilerとは何かの説明
+- React Compilerのコードの具体的な話
+- Reactのこと
+  - メモ化について
+  - APIの説明
+
+あと資料の中では自己紹介も入っていますが、このブログでは書かないです。
+
+## React Compilerとは
+
+> React Compiler is a compiler that optimizes React applications, ensuring that only the minimal parts of components and hooks will re-render when state changes. The compiler also validates that components and hooks follow the Rules of React.
+>
+> ref: [https://github.com/facebook/react/tree/main/compiler#react-compiler](https://github.com/facebook/react/tree/main/compiler#react-compiler)
+
+日本語に訳して説明をすると、つまりReact Compilerとは、**Reactアプリの最適化を行うコンパイラ**のことを指します。
+
+皆さんはこれまでReactアプリの最適化を行う際に、
+
+- [useMemo](https://react.dev/reference/react/useMemo)
+- [useCallback](https://react.dev/reference/react/useCallback)
+- [React.memo](https://react.dev/reference/react/memo)
+
+のようなReactが提供しているメモ化関数を使って手動で最適化を行ってきたと思います。React Compilerを使えば、自動で最適化を行ってくれるようになるため、開発者によるメモ化は不要になります。そしてこれはReact19でやってやってきます！
+
+## React Compilerを入れることで嬉しいこと
+
+**React CompilerはReactアプリの最適化を自動で行ってくれるもの**ということがわかりました。
+では次に、実際にReact Compilerを入れることで我々開発者はどんなことが嬉しいのでしょうか。筆者は二つポイントがあると思っています。
+
+- 手動メモ化からの解放
+- コンパイルチェックによるコードの品質担保
+
+それぞれ見ていきましょう。
+
+### 手動メモ化からの解放 
+
+これは先ほども言った内容ですが、React Compilerの目玉機能と言っても過言ではない自動メモ化はメリットとして一番あると思っています。
+
+```tsx
+import { memo, useState, useCallback, useMemo } from 'react';
+
+export default function MyApp() {
+  const [name, setName] = useState('');
+  const [address, setAddress] = useState('');
+
+  const handleSubmit = useCallback((orderDetails) => {
+    post('/product/' + productId + '/buy', {
+      referrer,
+      orderDetails,
+    });
+  }, [productId, referrer]);
+
+ const visibleTodos = useMemo(
+    () => filterTodos(todos, tab),
+    [todos, tab]
+  );
+
+  return (
+    ...簡単のために省略
+  );
+}
+
+const Greeting = memo(function Greeting({ name }) {
+  console.log("Greeting was rendered at", new Date().toLocaleTimeString());
+  return <h3>Hello{name && ', '}{name}!</h3>;
+});
+```
+
+こちらはuseMemo/useCallback/React.memoをそれぞれ使ったみたコードになります（ドキュメントから引っ張ってきたので、若干非現実的なコードにはなっています🙏）
+
+React Compilerを使っている場合は以下のように書けます。
+
+```tsx
+import { useState } from 'react';
+
+export default function MyApp() {
+  const [name, setName] = useState('');
+  const [address, setAddress] = useState('');
+
+  const handleSubmit = (orderDetails) => {
+    post('/product/' + productId + '/buy', {
+      referrer,
+      orderDetails,
+    });
+  };
+
+ const visibleTodos = () => filterTodos(todos, tab);
+
+  return (
+    ...簡単のために省略
+  );
+}
+
+const Greeting = function Greeting({ name }) {
+  console.log("Greeting was rendered at", new Date().toLocaleTimeString());
+  return <h3>Hello{name && ', '}{name}!</h3>;
+};
+```
+
+自動でメモ化してくれるので、シンプルなコードになりました。あとはdepsの管理も不要になるので、単純にバグも減りそうです（`react-hooks/exhaustive-deps`は入れてるといえdepsのバグはあるある）
+
+あと、筆者としては**メモ化するしないのコミュニケーションが減る**ことも良いと思っています。
+よく記事でも「こういったケースはメモ化した方が良い」「メモ化は全部はしないほうが良い」というような記事が定期的に出ていたり、業務の中でも「これは〇〇だからメモ化は逆にしないほうが良いのでは」といったレビューをもらった開発者の方は多いのではないでしょうか。筆者も何度かレビューをもらったことがありますが、正直アプリケーションを作る上でメモ化するしないの判断をするのは難しいと思っていたので、自動メモ化の恩恵はこういった部分でも役に立つと思っています。
+
+### コンパイルチェックによるコードの品質担保 
+
+## React Compilerのコンパイルの流れ
+
+## React Compilerのこれから
+
+## まとめ
+
+## 関連
+
+- [React Compiler Doc](https://react.dev/learn/react-compiler)
+- [react/compiler at main · facebook/react](https://github.com/facebook/react/tree/main/compiler)
+- [Introducing React Compiler · reactwg react-compiler · Discussion \#5](https://github.com/reactwg/react-compiler/discussions/5)
