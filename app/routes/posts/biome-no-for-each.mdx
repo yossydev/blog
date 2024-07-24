@@ -1,0 +1,77 @@
+---
+title: "BiomeがforEachではなくfor...ofを推す理由を処理速度の観点から見る"
+description: "BiomeではforEachを使用するとfor...ofを使用するようにエラーになります。今回はその理由についてそれぞれの速度を元に見ていきます"
+date: "2024/06/29"
+published: true
+---
+
+## Intro
+
+biomeには`forEach`を使用すると、`for...of`を使用するようにエラーが出ます。これは[noForEach](https://biomejs.dev/linter/rules/no-for-each/)というrecommendedルールによるものです。
+
+今回はなぜ`for...of`を使うように推奨しているのかを、処理速度の観点で見ていきます。
+
+## お断り
+
+> Performance: Using forEach can lead to performance issues, especially when working with large arrays. When more requirements are added on, forEach typically gets chained with other methods like filter or map, causing multiple iterations over the same Array. Encouraging for loops discourages chaining and encourages single-iteration logic (e.g. using a continue instead of filter).
+
+本記事でも出てきますが。noForEachのドキュメントにはこのように記載されています。
+筆者は今回の記事でこのことについての説明をしているようなものなので、その他のJavaScriptのメソッドを使った比較などは行ってないです。
+
+**あくまでも今回は`forEach`と`for...of`の違いについてという内容であるということをご理解いただければと思います🙇‍♂️**
+
+## Performance
+
+ドキュメントには以下のように記載されています。
+
+> Performance: Using forEach can lead to performance issues, especially when working with large arrays. When more requirements are added on, forEach typically gets chained with other methods like filter or map, causing multiple iterations over the same Array. Encouraging for loops discourages chaining and encourages single-iteration logic (e.g. using a continue instead of filter).
+
+要件が追加される場合、つまり何かしら配列の操作を行う必要があるときに、forEachではmapやfilterを組み合わせますが、それだと毎回Arrayに対して読み込みが発生してしまいます。
+
+それに対し`for...of`ではcontinue, breakなどが使用出来るので、Arrayを一度読み込むだけで済むことができるという違いがあります。
+
+## 計測
+
+forEachとfor...ofの実行時間を
+
+- 配列の値1つ1つに対して処理を行うパターン: first.js
+- 配列に対して追加の要件を含めて処理を行うパターン: second.js
+- 配列に対して追加の要件を含めて処理を行うパターン: third.js
+
+この二つのパターンで計測してみました。リポジトリは[こちら](https://github.com/yossydev/biome-noForEach)に貼っているので、もし手元で動かしてみたい方はどうぞ。
+
+https://github.com/yossydev/biome-noForEach
+
+### 結果
+
+#### 1. 配列の値一つ一つに対して処理を行うパターン
+```first.js
+- forEach: 6.912ms
+- for...of: 10.796ms
+```
+
+#### 2. 配列に対して少し要件を追加して処理を行うパターン
+```second.js
+- forEach with map and filter: 20.497ms
+- for...of with continue: 12.882ms
+```
+
+#### 2. 配列に対して少し要件を追加して処理を行うパターン
+```third.js
+- forEach with filter and forEach: 14.519ms
+- for...of with continue and break: 11.689ms
+```
+
+`1`ではforEachの方が早いものの、filterを組み合わせた`2`ではfor...ofの方が早いことがわかりました。
+これは**複数のメソッドチェーンがArrayに対して何度も読み込みが発生してしまう**ことよる処理速度の差であると考えられます。
+
+## まとめ
+
+筆者としては`for...of`の方が明示的になるのでコードが読みやすいので好きでしたが、処理速度という観点でも差があることが理解できたので良かったです。
+
+## 関連
+
+- [https://biomejs.dev/linter/rules/no-for-each/](https://biomejs.dev/linter/rules/no-for-each/)
+- [https://stackoverflow.com/a/41559281](https://stackoverflow.com/a/41559281)
+- [https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of)
+
