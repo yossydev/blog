@@ -7,8 +7,10 @@ published: false
 
 ## Intro
 
-このブログは、[若手エンジニアLT & 交流会]というイベントで発表した[Introduce to React Compiler]()という資料の日本語ブログです。
+このブログは8/4に行われた[若手エンジニアLT & 交流会](https://devguil.connpass.com/event/321787/)というイベントで発表した、[Introduce to React Compiler]()という資料の日本語ブログです。
 資料は基本英語なので、翻訳だと思っていただければ大丈夫です。
+
+内容としてはざっくりReact Compilerの説明を書いてます。[Youtube](https://www.youtube.com/@yossydev)で[React Compiler Code Reading](https://www.youtube.com/watch?v=ZaZb1FhwdxQ&list=PLL3VHi3SOiPv4rpI3yC8tFPlOGukAOz7f)というものもやっており、せっかくなのでそこで見た実際のコードも見ながらこのブログは書きます。
 
 ## 話さないこと
 
@@ -120,7 +122,31 @@ const Greeting = function Greeting({ name }) {
 
 ### コンパイルチェックによるコードの品質担保 
 
+React Compilerは当然ながらコンパイラなため、意図してない、許可していないコードがあればコンパイルが失敗するようになっています。
+
+例えば以下のようなコードは、コンパイルエラーとなります。
+
+```tsx
+// ref: https://github.com/facebook/react/blob/main/compiler/packages/babel-plugin-react-compiler/src/__tests__/fixtures/compiler/error.invalid-mutate-props-via-for-of-iterator.expect.md
+function Component(props) {
+  const items = [];
+  for (const x of props.items) {
+    x.modified = true; // InvalidReact
+    items.push(x);
+  }
+  return items;
+}
+```
+
+ぜひこのコードを[Playground](https://playground.react.dev/#N4Igzg9grgTgxgUxALhAMygOzgFwJYSYAEAwhALYAOhCmOAFJTBJWAJRHAA6xRchYHETw4E5MEQC8RANoBdANw8iRNBBhF6-TIKIAPIhDREmLMADoRY9p2Ur958hAAmeNHgTOpRHDCgIlXhUrcXNKKDAAC3o9NkCVAF87GAQcWGIQsECEkASgA)で試してみてください。`InvalidReact: Mutating component props or hook arguments is not allowed. Consider using a local variable instead`というエラーになるはずです。しかしこのコードは今までは特に問題なくブラウザでも動作しました。
+
+React Compilerを使うことで、このように事前に安全ではない、意図していないコードを検知することができます。
+
+ちなみに、コンパイル時ではなく編集中にエラーを知りたい！という方には、[eslint-plugin-react-compiler](https://github.com/facebook/react/tree/main/compiler/packages/eslint-plugin-react-compiler)というプラグインがあります。これを使えばReact Compilerによって検出されたエラーをlintとしてチェックすることもできます。React Compilerを使うのであれば、一緒に入れておくと良いでしょう。
+
 ## React Compilerのコンパイルの流れ
+
+ここまでで、React Compilerを導入する嬉しさは理解いただけたかと思います。では次に、React Compilerのコンパイルの流れをみていきます。
 
 ## React Compilerのこれから
 
