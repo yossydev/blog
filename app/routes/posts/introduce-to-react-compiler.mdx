@@ -16,7 +16,7 @@ published: false
 
 今回は以下のことについては話さないです。
 
-- Compilerとは何かの説明
+- コンパイラそのものについての説明
 - React Compilerのコードの具体的な話
 - Reactのこと
   - メモ化について
@@ -40,6 +40,13 @@ published: false
 
 のようなReactが提供しているメモ化関数を使って手動で最適化を行ってきたと思います。React Compilerを使えば、自動で最適化を行ってくれるようになるため、開発者によるメモ化は不要になります。そしてこれはReact19でやってやってきます！
 
+## Reactのレンダリングの特徴
+
+Reactは基本的には全て再レンダリングするような仕組みになっています。**Reactは**と言っているのは、SolidJSなどの他のフレームワークでは再レンダリングを行うタイミングを開発者が制御するようになっています。
+Reactではそれが反対で、再レンダリングしないように制御するようになっています。そのため更新したかどうかを判断する必要がなく、基本的には常に最新のデータが表示されるようになっています。
+
+React Compilerがこのタイミングで登場した背景として、コンパイラの必要性を認識するのがそもそも後になり、さらに実際に作るのにも時間がかかったそうです。
+
 ## React Compilerを入れることで嬉しいこと
 
 **React CompilerはReactアプリの最適化を自動で行ってくれるもの**ということがわかりました。
@@ -52,41 +59,7 @@ published: false
 
 ### 手動メモ化からの解放 
 
-これは先ほども言った内容ですが、React Compilerの目玉機能と言っても過言ではない自動メモ化はメリットとして一番あると思っています。
-
-```tsx
-import { memo, useState, useCallback, useMemo } from 'react';
-
-export default function MyApp() {
-  const [name, setName] = useState('');
-  const [address, setAddress] = useState('');
-
-  const handleSubmit = useCallback((orderDetails) => {
-    post('/product/' + productId + '/buy', {
-      referrer,
-      orderDetails,
-    });
-  }, [productId, referrer]);
-
- const visibleTodos = useMemo(
-    () => filterTodos(todos, tab),
-    [todos, tab]
-  );
-
-  return (
-    ...簡単のために省略
-  );
-}
-
-const Greeting = memo(function Greeting({ name }) {
-  console.log("Greeting was rendered at", new Date().toLocaleTimeString());
-  return <h3>Hello{name && ', '}{name}!</h3>;
-});
-```
-
-こちらはuseMemo/useCallback/React.memoをそれぞれ使ったみたコードになります（ドキュメントから引っ張ってきたので、若干非現実的なコードにはなっています🙏）
-
-React Compilerを使っている場合は以下のように書けます。
+当然ですが自動のメモ化がメリットです。
 
 ```tsx
 import { useState } from 'react';
@@ -96,33 +69,132 @@ export default function MyApp() {
   const [address, setAddress] = useState('');
 
   const handleSubmit = (orderDetails) => {
+    setAddress("122-2222")
     post('/product/' + productId + '/buy', {
       referrer,
       orderDetails,
     });
-  };
+  };j
 
- const visibleTodos = () => filterTodos(todos, tab);
+  const visibleTodos = () => filterTodos(todos, tab);
 
   return (
-    ...簡単のために省略
+    <>
+      <p>{address}</p>
+      <Greeting name={"Yuto"} />
+      <button onClick={visibleTodos}>Click!!</button>
+      <button onClick={handleSubmit}>Click!!</button>
+    </>
   );
 }
 
-const Greeting = function Greeting({ name }) {
+function Greeting({ name }) {
   console.log("Greeting was rendered at", new Date().toLocaleTimeString());
   return <h3>Hello{name && ', '}{name}!</h3>;
 };
 ```
 
-自動でメモ化してくれるので、シンプルなコードになりました。あとはdepsの管理も不要になるので、単純にバグも減りそうです（`react-hooks/exhaustive-deps`は入れてるといえdepsのバグはあるある）
+こちらはuseMemo/useCallback/React.memoをそれぞれ使ったみたコードになります（ドキュメントから引っ張ってきたので、若干非現実的なコードにはなっています🙏）
+これからのReactではこのメモ化関数を使用する必要はなくなります。
 
-あと、筆者としては**メモ化するしないのコミュニケーションが減る**ことも良いと思っています。
+そして次に、React Compilerを使ってコンパイルした結果は以下のようになります。
+
+```ts
+function MyApp() {
+  const $ = _c(8);
+  useState("");
+  const [address, setAddress] = useState("");
+  let t0;
+  if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
+    t0 = (orderDetails) => {
+      setAddress("122-2222");
+      post("/product/" + productId + "/buy", {
+        referrer,
+        orderDetails,
+      });
+    };
+    $[0] = t0;
+  } else {
+    t0 = $[0];
+  }
+  const handleSubmit = t0;
+  const visibleTodos = _temp;
+  let t1;
+  if ($[1] !== address) {
+    t1 = <p>{address}</p>;
+    $[1] = address;
+    $[2] = t1;
+  } else {
+    t1 = $[2];
+  }
+  let t2;
+  let t3;
+  let t4;
+  if ($[3] === Symbol.for("react.memo_cache_sentinel")) {
+    t2 = <Greeting name="Yuto" />;
+    t3 = <button onClick={visibleTodos}>Click!!</button>;
+    t4 = <button onClick={handleSubmit}>Click!!</button>;
+    $[3] = t2;
+    $[4] = t3;
+    $[5] = t4;
+  } else {
+    t2 = $[3];
+    t3 = $[4];
+    t4 = $[5];
+  }
+  let t5;
+  if ($[6] !== t1) {
+    t5 = (
+      <>
+        {t1}
+        {t2}
+        {t3}
+        {t4}
+      </>
+    );
+    $[6] = t1;
+    $[7] = t5;
+  } else {
+    t5 = $[7];
+  }
+  return t5;
+}
+function Greeting(t0) {
+  const $ = _c(3);
+  const { name } = t0;
+  console.log("Greeting was rendered at", new Date().toLocaleTimeString());
+  const t1 = name && ", ";
+  let t2;
+  if ($[0] !== t1 || $[1] !== name) {
+    t2 = (
+      <h3>
+        Hello{t1}
+        {name}!
+      </h3>
+    );
+    $[0] = t1;
+    $[1] = name;
+    $[2] = t2;
+  } else {
+    t2 = $[2];
+  }
+  return t2;
+}
+function _temp() {
+  return filterTodos(todos, tab);
+}
+```
+
+`c`という引数の数字分の配列を作成し、条件分岐でその中に値やjsxを格納していっています。
+
+（cについては以前筆者がブログ書いたのでぜひそちらをご覧ください。[React Compilerで出力されるc(number)について](https://zenn.dev/yuto76/articles/d2cbd4d61f7a3a)）
+
+筆者としては**メモ化するしないのコミュニケーションが減る**ことも良いと思っています。
 よく記事でも「こういったケースはメモ化した方が良い」「メモ化は全部はしないほうが良い」というような記事が定期的に出ていたり、業務の中でも「これは〇〇だからメモ化は逆にしないほうが良いのでは」といったレビューをもらった開発者の方は多いのではないでしょうか。筆者も何度かレビューをもらったことがありますが、正直アプリケーションを作る上でメモ化するしないの判断をするのは難しいと思っていたので、自動メモ化の恩恵はこういった部分でも役に立つと思っています。
 
 ### コンパイルチェックによるコードの品質担保 
 
-React Compilerは当然ながらコンパイラなため、意図してない、許可していないコードがあればコンパイルが失敗するようになっています。
+React Compilerを使用することで意味解析が可能になり、これにより意図してない/許可していないコードがあればコンパイルが失敗するようになっています。
 
 例えば以下のようなコードは、コンパイルエラーとなります。
 
@@ -144,13 +216,40 @@ React Compilerを使うことで、このように事前に安全ではない、
 
 ちなみに、コンパイル時ではなく編集中にエラーを知りたい！という方には、[eslint-plugin-react-compiler](https://github.com/facebook/react/tree/main/compiler/packages/eslint-plugin-react-compiler)というプラグインがあります。これを使えばReact Compilerによって検出されたエラーをlintとしてチェックすることもできます。React Compilerを使うのであれば、一緒に入れておくと良いでしょう。
 
-## React Compilerのコンパイルの流れ
+## React CompilerのHIRについて
 
-ここまでで、React Compilerを導入する嬉しさは理解いただけたかと思います。では次に、React Compilerのコンパイルの流れをみていきます。
+React Compilerのコードを読んでいると、HIR（High-level Intermediate Representation）という概念が登場します。ここでは、HIRについて簡単に説明します。（本来はここでコンパイルの流れを書きたかったんですが全体像まだ追えていないので別の機会に🙏）
 
-## React Compilerのこれから
+### HIRとは
+HIRは「高レベル中間表現」を意味し、Rust Compiler Development Guideから影響を受けています。React Compilerでは、以下のような流れでHIRを生成します：
+
+1. Babelを使ってコードをパース
+2. ASTを生成
+3. ASTをlowering（低レベル化）してHIRを作成
+
+### HIRの役割
+
+HIRは、高レベルなコード構造を保持しつつ、コンパイラが扱いやすい形式に変換したものです。これにより、以下のようなメリットがあります：
+
+コンパクトな表現：高レベルなコード構造を維持することで、コンパイル後のアプリケーションサイズへの影響を最小限に抑えます。
+
+デバッグの容易さ：開発者が書いたコードの構造に近い形を保持するため、デバッグが容易になります。
+
+### HIRの特徴
+React CompilerのHIRは以下の特徴を持っています：
+
+- 高レベルな情報の保持（例：if文、for文などの区別）
+- コードの制御フローを表現するグラフ構造
+- ネストのない平坦な構造
+
+これらの特徴により、コードの最適化やアナリシスが行いやすくなっています。
+
+HIRは、高レベルなコード構造を保持しつつコンパイラが扱いやすい形式に変換する重要な役割を果たしています。これにより、React Compilerは効率的な最適化を行いつつ、開発者にとって理解しやすい出力を生成することが可能になっています。
 
 ## まとめ
+
+React 19は久しぶりのReactのメジャーアップデートになりますが、React Compilerが入ることで実際にどのような体験を開発者が得られるのかとても楽しみです。
+最後に宣伝にはなりますが、[React Comiler Code Reading](https://youtube.com/playlist?list=PLL3VHi3SOiPv4rpI3yC8tFPlOGukAOz7f&si=lj58LL0TZIZKg77c)というYoutubeでCompilerのコードを読む会をしているので、気になった方やコンパイラについて理解を深めたい方はぜひ見てみてください🫣
 
 ## 関連
 
