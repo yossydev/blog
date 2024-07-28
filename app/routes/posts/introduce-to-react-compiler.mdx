@@ -18,9 +18,8 @@ published: false
 
 - コンパイラそのものについての説明
 - React Compilerのコードの具体的な話
-- Reactのこと
-  - メモ化について
-  - APIの説明
+- Reactのメモ化について
+- ReactのAPIの説明
 
 あと資料の中では自己紹介も入っていますが、このブログでは書かないです。
 
@@ -221,34 +220,42 @@ React Compilerを使うことで、このように事前に安全ではない、
 React Compilerのコードを読んでいると、HIR（High-level Intermediate Representation）という概念が登場します。ここでは、HIRについて簡単に説明します。（本来はここでコンパイルの流れを書きたかったんですが全体像まだ追えていないので別の機会に🙏）
 
 ### HIRとは
-HIRは「高レベル中間表現」を意味し、Rust Compiler Development Guideから影響を受けています。React Compilerでは、以下のような流れでHIRを生成します：
+
+HIRは、高レベルなコード構造を保持しつつ、コンパイラが扱いやすい形式に変換したものです。これは[Rust Compiler Development Guide](https://rustc-dev-guide.rust-lang.org/hir.html)から影響を受けています。
+
+HIRはReact Compilerでは以下のように生成されます。
 
 1. Babelを使ってコードをパース
 2. ASTを生成
 3. ASTをlowering（低レベル化）してHIRを作成
 
-### HIRの役割
+### なぜHIRなのか
 
-HIRは、高レベルなコード構造を保持しつつ、コンパイラが扱いやすい形式に変換したものです。これにより、以下のようなメリットがあります：
+そしてこのHIRを使うことで、以下のようなメリットがあります。
 
-コンパクトな表現：高レベルなコード構造を維持することで、コンパイル後のアプリケーションサイズへの影響を最小限に抑えます。
+> High-level code is more compact, and helps reduce the impact of compilation on application size
+> 
+> High-level constructs that match what the developer wrote are easier to debug
 
-デバッグの容易さ：開発者が書いたコードの構造に近い形を保持するため、デバッグが容易になります。
+日本語に訳すと以下のようになります。
 
-### HIRの特徴
-React CompilerのHIRは以下の特徴を持っています：
+- 高レベルなコード構造を維持することで、コンパイル後のアプリケーションサイズへの影響を最小限に抑える
+- 開発者が書いたコードの構造に近い形を保持するため、デバッグが容易になる
 
-- 高レベルな情報の保持（例：if文、for文などの区別）
-- コードの制御フローを表現するグラフ構造
-- ネストのない平坦な構造
+例えばJavaScriptの構文に論理式というものがあります。
 
-これらの特徴により、コードの最適化やアナリシスが行いやすくなっています。
+```js
+(a ?? b)
+```
 
-HIRは、高レベルなコード構造を保持しつつコンパイラが扱いやすい形式に変換する重要な役割を果たしています。これにより、React Compilerは効率的な最適化を行いつつ、開発者にとって理解しやすい出力を生成することが可能になっています。
+これは役割的には**aがnullabeだった場合bを使用する**というif分的役割を果たすのでif分になるんですが、React Compilerでは先ほどの二つの理由によってこの論理式のまま扱いたい、そのためにHIRを使ったと言うことらしいです（厳密にはもっと理由はあると思いますが👀）
+
+まとめると、HIRは、既存のコードに近い状態（高レベルな状態）でコンパイラが扱えるようにするもの。そしてReact Compilerではコンパイル後の影響を最低限に、デバッグの容易さ、という二つのポイントからHIRを採用したといことです。面白いですね。
 
 ## まとめ
 
-React 19は久しぶりのReactのメジャーアップデートになりますが、React Compilerが入ることで実際にどのような体験を開発者が得られるのかとても楽しみです。
+React 19は久しぶりのReactのメジャーアップデートになります。React Compilerが入ることで実際にどのような体験を開発者が得られるのかとても楽しみです。
+
 最後に宣伝にはなりますが、[React Comiler Code Reading](https://youtube.com/playlist?list=PLL3VHi3SOiPv4rpI3yC8tFPlOGukAOz7f&si=lj58LL0TZIZKg77c)というYoutubeでCompilerのコードを読む会をしているので、気になった方やコンパイラについて理解を深めたい方はぜひ見てみてください🫣
 
 ## 関連
@@ -256,3 +263,4 @@ React 19は久しぶりのReactのメジャーアップデートになります�
 - [React Compiler Doc](https://react.dev/learn/react-compiler)
 - [react/compiler at main · facebook/react](https://github.com/facebook/react/tree/main/compiler)
 - [Introducing React Compiler · reactwg react-compiler · Discussion \#5](https://github.com/reactwg/react-compiler/discussions/5)
+- [Rust Compiler Development Guide](https://rustc-dev-guide.rust-lang.org/hir.html)
