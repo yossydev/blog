@@ -1,0 +1,113 @@
+---
+title: "読書メモ: コンパイラ"
+description: "コンパイラという本を読んだのでこれはその読書メモです。手を動かしながら読めたので大変勉強になりました。"
+date: "2024/07/31"
+published: true
+---
+
+## Intro
+
+[コンパイラ [コンピュータサイエンス教科書シリーズ] (コンピュータサイエンス教科書シリーズ 8)](https://www.amazon.co.jp/dp/4339027081?psc=1&ref=ppx_yo2ov_dt_b_product_details)という本を知り合いに進めていただき読みました。
+意外と薄い本にも関わらず、要件がまとまっていてとても読みやすい本でした。自分みたいなCSを学んでこなかった身としても理解できる内容になっていました。
+
+## コンパイルのフロー
+
+コンパイルの全体フローとしては、主に以下のようになっています。
+
+1. 字句解析
+2. 構文解析
+3. 意味解析
+4. コード生成
+
+わかりやすく表現すると、以下のようになります。
+
+1. 単語に区切る作業
+2. 文法に合っているかチェックをする作業
+3. 意味規則に基づいたチェックをする作業
+4. 目的に基づいたチェックをする作業。（コードを効率良くする最適化を行うこともある）
+
+では実際にどのようにして解析をしているのか、どんなことをやっているのか見ていきましょう。
+
+## 字句解析
+
+構文解析。この解析フローは以下のようになっています。
+
+1. 入力文字列を走査
+2. パターンにマッチしたらそこまでの文字列を一区切りにする
+3. 結果を構文解析器に渡す
+
+例えば、以下のようなコードを字句解析してみます。
+
+```c
+if (a != 0){
+  break;
+}
+```
+
+このコードをトークンに分けた場合、`IF, LPAR, IDENT, NEQ, NUMBER, RPAR, LBAR, BREAK, SEMI, RBRA`というようになります。
+`if`は`IF`に、`!=`は`INDENT`といったトークンに変換されています。
+
+少しv8のコードを見てみましょう。[src/parsing/token.h](https://github.com/v8/v8/blob/main/src/parsing/token.h)というコードの中に、トークンの定義がされています。
+例えば`return`では、kReturnというトークンに変換されるようになっています。
+
+```h
+K(kReturn, "return", 0)                                                     \
+```
+
+次に[src/parsing/scanner.h](https://github.com/v8/v8/blob/main/src/parsing/scanner.h)を見ていきます。これはコードの走査（Scan）を行う実装が書かれています。
+例えば以下は文字列リテラルに対して実行されるコードです。
+
+```cc
+Token::Value Scanner::ScanString() {
+  base::uc32 quote = c0_;
+
+  next().literal_chars.Start(); // 文字列リテラルの収集を始める
+  while (true) {
+    AdvanceUntil([this](base::uc32 c0) {
+      if (V8_UNLIKELY(static_cast<uint32_t>(c0) > kMaxAscii)) {
+        if (V8_UNLIKELY(unibrow::IsStringLiteralLineTerminator(c0))) {
+          return true;
+        }
+        AddLiteralChar(c0);
+        return false;
+      }
+      uint8_t char_flags = character_scan_flags[c0];
+      if (MayTerminateString(char_flags)) return true;
+      AddLiteralChar(c0);
+      return false;
+    });
+
+    while (c0_ == '\\') {
+      Advance();
+      // TODO(verwaest): Check whether we can remove the additional check.
+      if (V8_UNLIKELY(c0_ == kEndOfInput || !ScanEscape<false>())) {
+        return Token::kIllegal;
+      }
+    }
+
+    if (c0_ == quote) {
+      Advance();
+      return Token::kString;
+    }
+
+    if (V8_UNLIKELY(c0_ == kEndOfInput ||
+                    unibrow::IsStringLiteralLineTerminator(c0_))) {
+      return Token::kIllegal;
+    }
+
+    AddLiteralChar(c0_);
+  }
+}
+```
+
+## 構文解析
+
+## 意味解析
+
+## コード生成
+
+## まとめ
+
+## 関連/参考リンク
+
+- [コンパイラ [コンピュータサイエンス教科書シリーズ] (コンピュータサイエンス教科書シリーズ 8)](https://www.amazon.co.jp/dp/4339027081?psc=1&ref=ppx_yo2ov_dt_b_product_details)
