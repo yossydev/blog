@@ -1,0 +1,112 @@
+---
+title: "@eslint/compatのfixupPluginRulesとは何をやっているのか"
+description: "flat config対応を行った際に、fixupPluginRulesというルールを作りました。突然現れ、しかしどんなルールかわからなかったのでまとめておきます"
+date: "2024/08/02"
+published: true
+---
+
+## Intro
+
+[eslint/compat](https://github.com/eslint/rewrite/tree/0f0fb92bbce41bdabbf23f8198943a7e14b3d1f3/packages/compat)には`fixupPluginRules`というAPIが提供されています。
+このAPIについて、少し前のeslintが公開した[Introducing ESLint Compatibility Utilities](https://eslint.org/blog/2024/05/eslint-compatibility-utilities/)というブログで登場していますが、あまり多くは語られていないです。
+とりあえず使っておけば確かに動くような気がしますが、今回は個人的興味もあり、このAPIは一体なんなのかまとめたいと思います。
+
+## fixupPluginRulesの使い方
+
+**そもそもFlat Configとは何か**みたいな説明は今回は省こうと思います。（気になる方は[こちら](https://eslint.org/blog/2022/08/new-config-system-part-2/)から）
+
+`fixupPluginRules`は`eslint.config.js`を作成し、以下のようにして使用します。
+
+```
+// https://github.com/eslint/rewrite/tree/0f0fb92bbce41bdabbf23f8198943a7e14b3d1f3/packages/compat#fixing-plugins
+import { fixupPluginRules } from "@eslint/compat";
+import somePlugin from "eslint-plugin-some-plugin";
+
+export default [
+	{
+		plugins: {
+			// insert the fixed plugin instead of the original
+			somePlugin: fixupPluginRules(somePlugin),
+		},
+		rules: {
+			"somePlugin/rule-name": "error",
+		},
+	},
+];
+```
+
+importしたプラグインを引数にして`fixupPluginRules`を渡すだけで良いです。とてもシンプルなインターフェースになっています。
+
+## どんな実装になっているのか
+
+では次に、具体的にどのような実装になっているか見て行きましょう。`fixupPluginRules`のAPIの実装は[packages/compat/src/fixup-rules.js](https://github.com/eslint/rewrite/blob/0f0fb92bbce41bdabbf23f8198943a7e14b3d1f3/packages/compat/src/fixup-rules.js#L193-L228)という中に書かれています。
+
+必要箇所だけピックアップすると、以下のようになります。
+
+```js
+/**
+ * Tracks the original plugin definition and the fixed-up plugin definition.
+ * @type {WeakMap<FixupPluginDefinition,FixupPluginDefinition>}
+ */
+const fixedUpPluginReplacements = new WeakMap();
+
+/**
+ * Tracks all of the fixed up plugin definitions so we don't duplicate effort.
+ * @type {WeakSet<FixupPluginDefinition>}
+ */
+const fixedUpPlugins = new WeakSet();
+
+...
+
+/**
+ * Takes the given plugin and creates a new plugin with all of the rules wrapped
+ * to provide the missing methods on the `context` object.
+ * @param {FixupPluginDefinition} plugin The plugin to fix up.
+ * @returns {FixupPluginDefinition} The fixed-up plugin.
+ */
+export function fixupPluginRules(plugin) {
+	// first check if we've already fixed up this plugin
+	if (fixedUpPluginReplacements.has(plugin)) {
+		return fixedUpPluginReplacements.get(plugin);
+	}
+
+	/*
+	 * If the plugin has already been fixed up, or if the plugin
+	 * doesn't have any rules, we can just return it.
+	 */
+	if (fixedUpPlugins.has(plugin) || !plugin.rules) {
+		return plugin;
+	}
+
+	const newPlugin = {
+		...plugin,
+		rules: Object.fromEntries(
+			Object.entries(plugin.rules).map(([ruleId, ruleDefinition]) => [
+				ruleId,
+				fixupRule(ruleDefinition),
+			]),
+		),
+	};
+
+	// cache the fixed up plugin
+	fixedUpPluginReplacements.set(plugin, newPlugin);
+	fixedUpPlugins.add(newPlugin);
+
+	return newPlugin;
+}
+```
+
+処理の流れとしては以下のような流れになっています。
+
+1. fixedUpPluginReplacementsにsetされていればそれを返すように（キャッシュを使う）
+2. fixedUpPluginsに追加（add）されている、もしくは引数で受け取ったプラグインにrulesが定義されていなければそのまま返す
+3. プラグインを展開し、key valueの形式に変換される。`{ ruleId: fixupRule(ruleDefinition) }`のようにして返す
+4. fixedUpPluginReplacementsとfixedUpPluginsに追加する
+
+newPluginを定義する際に、ルールに対して`fixupRule`という関数を使っています。これはどのような処理を行っているのでしょうか。
+
+## つまりfixupPluginRulesとはなんなのか
+
+## まとめ
+
+## 関連/参考
