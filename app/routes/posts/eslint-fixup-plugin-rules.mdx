@@ -1,24 +1,23 @@
 ---
 title: "@eslint/compatのfixupPluginRulesとは何をやっているのか"
-description: "flat config対応を行った際に、fixupPluginRulesというルールを作りました。突然現れ、しかしどんなルールかわからなかったのでまとめておきます"
-date: "2024/08/02"
+description: "flat config対応を行った際に、fixupPluginRulesというルールを使いました。突然現れ、しかしどんなルールかわからなかったのでまとめておきます"
+date: "2024/08/04"
 published: true
 ---
 
 ## Intro
 
-[eslint/compat](https://github.com/eslint/rewrite/tree/0f0fb92bbce41bdabbf23f8198943a7e14b3d1f3/packages/compat)には`fixupPluginRules`というAPIが提供されています。
-このAPIについて、少し前のeslintが公開した[Introducing ESLint Compatibility Utilities](https://eslint.org/blog/2024/05/eslint-compatibility-utilities/)というブログで登場していますが、あまり多くは語られていないです。
+[eslint/compat](https://github.com/eslint/rewrite/tree/main/packages/compat)には`fixupPluginRules`というAPIが提供されています。
+このAPIは、少し前にeslint公式が公開した[Introducing ESLint Compatibility Utilities](https://eslint.org/blog/2024/05/eslint-compatibility-utilities/)というブログで登場していますが、あまり多くは語られていないです。
 とりあえず使っておけば確かに動くような気がしますが、今回は個人的興味もあり、このAPIは一体なんなのかまとめたいと思います。
 
 ## fixupPluginRulesの使い方
 
 **そもそもFlat Configとは何か**みたいな説明は今回は省こうと思います。（気になる方は[こちら](https://eslint.org/blog/2022/08/new-config-system-part-2/)から）
 
-`fixupPluginRules`は`eslint.config.js`を作成し、以下のようにして使用します。
+`fixupPluginRules`は`eslint.config.js`を作成し、以下のようにして使用します。（[参考](https://github.com/eslint/rewrite/tree/0f0fb92bbce41bdabbf23f8198943a7e14b3d1f3/packages/compat#fixing-plugins)）
 
-```
-// https://github.com/eslint/rewrite/tree/0f0fb92bbce41bdabbf23f8198943a7e14b3d1f3/packages/compat#fixing-plugins
+```js
 import { fixupPluginRules } from "@eslint/compat";
 import somePlugin from "eslint-plugin-some-plugin";
 
@@ -40,6 +39,8 @@ importしたプラグインを引数にして`fixupPluginRules`を渡すだけ�
 ## どんな実装になっているのか
 
 では次に、具体的にどのような実装になっているか見て行きましょう。`fixupPluginRules`のAPIの実装は[packages/compat/src/fixup-rules.js](https://github.com/eslint/rewrite/blob/0f0fb92bbce41bdabbf23f8198943a7e14b3d1f3/packages/compat/src/fixup-rules.js#L193-L228)という中に書かれています。
+
+### fixupPluginRulesについて
 
 必要箇所だけピックアップすると、以下のようになります。
 
@@ -98,15 +99,61 @@ export function fixupPluginRules(plugin) {
 
 処理の流れとしては以下のような流れになっています。
 
-1. fixedUpPluginReplacementsにsetされていればそれを返すように（キャッシュを使う）
-2. fixedUpPluginsに追加（add）されている、もしくは引数で受け取ったプラグインにrulesが定義されていなければそのまま返す
+1. `fixedUpPluginReplacements`にsetされていればそれを返すように（キャッシュを使う）
+2. `fixedUpPlugins`に追加（add）されている、もしくは引数で受け取ったプラグインにrulesが定義されていなければそのまま返す
 3. プラグインを展開し、key valueの形式に変換される。`{ ruleId: fixupRule(ruleDefinition) }`のようにして返す
-4. fixedUpPluginReplacementsとfixedUpPluginsに追加する
+4. `fixedUpPluginReplacements`と`fixedUpPlugins`に追加する
 
-newPluginを定義する際に、ルールに対して`fixupRule`という関数を使っています。これはどのような処理を行っているのでしょうか。
+`newPlugin`を定義する際に、ルールに対して`fixupRule`という関数を使っています。これはどのような処理を行っているのでしょうか。
+
+### fixupRuleについて
+
+少しだけ、`fixupRule`関数についてもみておきましょう。実装は[こちら](https://github.com/eslint/rewrite/blob/main/packages/compat/src/fixup-rules.js#L83)です
+
+まずインターフェースをみてみましょう。
+
+```js
+/**
+ * Takes the given rule and creates a new rule with the `create()` method wrapped
+ * to provide the missing methods on the `context` object.
+ * @param {FixupRuleDefinition|FixupLegacyRuleDefinition} ruleDefinition The rule to fix up.
+ * @returns {FixupRuleDefinition} The fixed-up rule.
+ */
+export function fixupRule(ruleDefinition) {
+  ...
+```
+
+引数には`FixupRuleDefinition`か`FixupLegacyRuleDefinition`を受け取り、返り値は`FixupRuleDefinition`を返すようになっています。
+このインターフェースから、`FixupRuleDefinition`はFlat Config用の型で、`FixupLegacyRuleDefinition`は旧ESLintの型のことだとわかります。
+
+そして実装のなかで、`const isLegacyRule = typeof ruleDefinition === "function";`という処理があります。古いルールは関数になっているようです。
+より理解度を深めるために、先ほどの型の中身を見てみましょう。
+
+```js
+/** @typedef {import("eslint").Rule.RuleModule} FixupRuleDefinition */
+/** @typedef {FixupRuleDefinition["create"]} FixupLegacyRuleDefinition */
+
+export namespace Rule {
+    interface RuleModule {
+        create(context: RuleContext): RuleListener;
+        meta?: RuleMetaData | undefined;
+    }
+```
+
+ここでわかるのは、`FixupRuleDefinition`はcreateとmetaという二つのプロパティを持っているのに対し、`FixupLegacyRuleDefinition`は`RuleModule`のcreate型になっているということです。
+そのため先ほどの`const isLegacyRule = typeof ruleDefinition === "function";`は正しく判定できていることがわかりますね。
+
+ちなみにflat configでカスタムルールを作ろうとすると、metaとcreateというルールは見ることになるかと思います。（[doc](https://eslint.org/docs/latest/extend/custom-rule-tutorial#step-2-stub-out-the-rule-file)）
 
 ## つまりfixupPluginRulesとはなんなのか
 
-## まとめ
+少し話がごちゃついてしまいましたが、なんとなく実装コードを読んだことで、`fixupPluginRules`とは、**Flat Config対応前とFlat Config対応後でプラグインの異なっているインターフェースをFlat Config用に変換してくれる関数である**ということが理解できました。
+
+実際に使った感想でもなんとなくそんなイメージかなとは思っていましたが、実装をみたことで動きとして理解でき、しっくりきました。
 
 ## 関連/参考
+
+- [eslint/compat](https://github.com/eslint/rewrite/tree/main/packages/compat) 
+- [Introducing ESLint Compatibility Utilities](https://eslint.org/blog/2024/05/eslint-compatibility-utilities/)
+- [Flat Config](https://eslint.org/blog/2022/08/new-config-system-part-2/)
+- [Flat Config Custom Rule](https://eslint.org/docs/latest/extend/custom-rule-tutorial#step-2-stub-out-the-rule-file)
