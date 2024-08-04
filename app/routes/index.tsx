@@ -41,7 +41,9 @@ const Posts: FC = () => {
     frontmatter: { title: string; date: string; published: boolean };
   }>("./posts/*.mdx", { eager: true });
   const entries = Object.entries(posts).filter(
-    ([_, module]) => module.frontmatter.published,
+    ([_, module]) =>
+      module.frontmatter.published ||
+      (module.frontmatter.title.includes("WIP") && import.meta.env.DEV),
   );
 
   const sortedEntries = entries
