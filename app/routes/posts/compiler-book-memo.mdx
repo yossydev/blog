@@ -1,0 +1,254 @@
+---
+title: "読書メモ: コンパイラ"
+description: "コンパイラという本を読んだのでこれはその読書メモです。手を動かしながら読めたので大変勉強になりました。"
+date: "2024/08/05"
+published: true
+---
+
+## Intro
+
+[コンパイラ [コンピュータサイエンス教科書シリーズ] (コンピュータサイエンス教科書シリーズ 8)](https://www.amazon.co.jp/dp/4339027081?psc=1&ref=ppx_yo2ov_dt_b_product_details)という本を知り合いに進めていただき読みました。
+意外と本自体の両方は多くないんですが、要件がまとまっていてとても読みやすい本でした。自分みたいなCSを学んでこなかった身としても理解できる内容になっていたと思います。コンパイラについての少しでも興味を持った方であればぜひ読んでみることをおすすめします。
+
+## コンパイルのフロー
+
+コンパイルの全体フローとしては、主に以下のようになっています。
+
+1. 字句解析
+2. 構文解析
+3. 意味解析
+4. コード生成
+
+わかりやすく表現すると、以下のようになります。
+
+1. 単語に区切る作業
+2. 文法に合っているかチェックをする作業
+3. 意味規則に基づいたチェックをする作業
+4. 目的に基づいたチェックをする作業。（コードを効率良くする最適化を行うこともある）
+
+では実際にどのようにして解析をしているのか、どんなことをやっているのか見ていきましょう。
+
+## 字句解析
+
+この解析フローは以下のようになっています。
+
+1. 入力文字列を走査
+2. パターンにマッチしたらそこまでの文字列を一区切りにする
+3. 結果を構文解析器に渡す
+
+例えば、以下のようなコードを字句解析してみます。
+
+```c
+if (a != 0){
+  break;
+}
+```
+
+このコードをトークンに分けた場合、`IF, LPAR, IDENT, NEQ, NUMBER, RPAR, LBAR, BREAK, SEMI, RBRA`というようになります。
+`if`は`IF`に、`!=`は`INDENT`といったトークンに変換されています。
+
+Unix環境の方であれば、`lex`というコマンドが使えるかと思います。これを使用して字句解析を作ることが可能です。例えば以下のようなコードがあります。
+
+```l
+%%
+[0-9]+ { printf("Number!!\n"); }
+[ \t\n]+ { /* do nothing */ }
+.+ { printf("other!!\n"); } 
+
+%%
+
+int main(){
+  while(yylex()!=0){
+  }
+  return 0;
+}
+```
+
+正規表現で入力を受け取ります。例えば0~9の入力があった場合は`Number!!`と出力します。これがlexingです。
+
+そしてここで変換されたトークンの結果を、次の構文解析器に渡します。
+
+{/*
+本当はブログ内でv8のコードを用いて書きたかったが、c言語への理解が足りないので諦めた。別で書きたい。
+
+少しv8のコードを見てみましょう。[src/parsing/token.h](https://github.com/v8/v8/blob/main/src/parsing/token.h)というコードの中に、トークンの定義がされています。
+例えば`return`では、kReturnというトークンに変換されるようになっています。
+
+```h
+K(kReturn, "return", 0)                                                     \
+```
+
+次に[src/parsing/scanner.h](https://github.com/v8/v8/blob/main/src/parsing/scanner.cc)を見ていきます。これはコードの走査（Scan）を行う実装が書かれています。
+例えば以下は文字列リテラルに対して実行されるコードです。
+
+```cc
+Token::Value Scanner::ScanString() {
+  base::uc32 quote = c0_;
+
+  next().literal_chars.Start(); 
+  while (true) {
+    AdvanceUntil([this](base::uc32 c0) {
+      if (V8_UNLIKELY(static_cast<uint32_t>(c0) > kMaxAscii)) {
+        if (V8_UNLIKELY(unibrow::IsStringLiteralLineTerminator(c0))) {
+          return true;
+        }
+        AddLiteralChar(c0);
+        return false;
+      }
+      uint8_t char_flags = character_scan_flags[c0];
+      if (MayTerminateString(char_flags)) return true;
+      AddLiteralChar(c0); return false;
+    });
+
+    while (c0_ == '\\') {
+      Advance();
+      // TODO(verwaest): Check whether we can remove the additional check.
+      if (V8_UNLIKELY(c0_ == kEndOfInput || !ScanEscape<false>())) {
+        return Token::kIllegal;
+      }
+    }
+
+    if (c0_ == quote) {
+      Advance();
+      return Token::kString;
+    }
+
+    if (V8_UNLIKELY(c0_ == kEndOfInput ||
+                    unibrow::IsStringLiteralLineTerminator(c0_))) {
+      return Token::kIllegal;
+    }
+
+    AddLiteralChar(c0_);
+  }
+}
+```
+
+`next().literal_chars.Start()`という関数が出てきました。関数としてのインターフェースは以下のようになっています
+
+```h
+TokenDesc& next() { return *next_; }
+```
+
+これは[scanner.h](https://github.com/v8/v8/blob/d0d9d34ebba710caa4a8cdfe2d7c60954b6d2380/src/parsing/scanner.h#L736)というファイルに定義されています。（`.h`という拡張子がついたファイルはヘッダファイルと呼ばれ、あらかじめ変数や関数を定義して、それをソースファイルの先頭で呼び出し実行されます。）
+*/}
+
+## 構文解析
+
+次に構文解析です。この解析では字句解析で生成されたトークンをもとに、構文木などを生成する作業を行います。
+実際のコンパイラでは、字句解析と構文解析を合わせて`Parser`と呼んだりしていることが多いように感じます。
+
+以下のようなコードであれば、どのような構文木が生成されるかみていきましょう。
+
+```c
+int main() {
+    int a = 10;
+    if (a != 0) {
+        a = 0;
+    }
+    return 0;
+}
+```
+
+[自分が今回用意したコード](https://github.com/yossydev/try-compiler/blob/main/yacc.y)のようになっているのであれば、以下のような構文木になります。
+
+```
+Program
+└── FunctionDefinition
+    └── CompoundStatement
+        ├── VariableDeclaration
+        │   ├── Identifier: a
+        │   └── Value: 10
+        ├── IfStatement
+        │   ├── Condition
+        │   │   ├── Left: Identifier (a)
+        │   │   ├── Operator: !=
+        │   │   └── Right: Number (0)
+        │   └── Body
+        │       └── AssignmentStatement
+        │           ├── Left: Identifier (a)
+        │           └── Right: Number (0)
+        └── ReturnStatement
+            └── Value: Number (0)
+```
+
+簡単に説明を載せておきます。
+
+- プログラム全体は`Program`
+- `Program`の直下に`FunctionDefinition`があります。ここがmainと宣言した部分にあたります。
+- `FunctionDefinition`の直下に`CompoundStatement`があります。これは関数の本体です。
+- `CompoundStatement`の中に、順番に以下の要素があります：
+    1. `VariableDeclaration`: 変数 a を 10 で初期化します。
+    2. `IfStatement`: 条件文を表します。
+        - `Condition`: a != 0 という条件を表します。
+        - `Body`: if 文の本体で、ここには代入文が含まれています。
+    3. `AssignmentStatement`: a = 0 という代入を表します。
+    4. `ReturnStatement`: 関数からの戻り値 0 を表します。
+
+### 構文解析の種類
+
+構文解析には大きく二つの解析手法があります
+
+- 上向き構文解析
+- 下向き構文解析
+
+上向き構文解析は、**葉から根へと作っていくように解析が進められる**解析手法です。
+つまり値をみて次に字句解析が行われ、構文解析がされるということ。
+
+次に下向き構文解析は反対で、**根から葉へと解析を進め、最終的に入力に合うように解析木を構築していく**解析手法です。
+
+あまりここら辺は理解できていないので今回はこれくらいにしておきます🙇‍♂️
+
+## 意味解析
+
+次に意味解析についてです。
+ここでは**字句解析時に生成したトークンが文法的に正しいかどうかをチェック**します。
+
+例えば以下のようなケースです。
+
+- 宣言されてない変数は使うことはできない
+- 宣言されていても誤った使い方をしているものをコンパイラは発見しなければならない
+
+具体的に、TypeScriptを例にみて行きたいと思います。
+
+```ts
+const PI = 3.14159;
+PI = 3.14; 
+```
+
+この例ではconstという定数を制御する文法に対して再代入を行おうとしているのでエラーになります。これは言語の仕様的にコンパイルエラーになるようにコンパイラは実装する必要があります。
+
+そして意味解析では型チェックも行います。
+
+```ts
+let name: string = "Alice";
+name = 42; 
+```
+
+string型に対して、number型の値を再代入しようとしているので、これも仕様的にコンパイルエラーにならなければなりません。
+
+今回も意味解析のコードを[こちら](https://github.com/yossydev/try-compiler/commit/1301749e4db5d81862e4d418ee168f9b28ed55d8)で実装しています。
+以下のようなコードはエラーになります。
+
+```
+int main() {
+    b = 10;  
+    return 0;
+}
+```
+
+`b`という変数は宣言されていないので、`Undeclared variable`というエラーになります。
+
+## 🚧 コード生成
+
+書くのにカロリーかなり使ったのでまた暇な時に書きます🙏
+
+## まとめ
+
+アプリを開発するだけではあまりコンパイラの挙動など理解しなくても開発はできると思いますが、筆者としてはフレームワークやライブラリの挙動を理解するためにもこういった普遍的な部分の勉強が遠回りでも大事だと思っています。
+今後はOSSのコードを読んで実際のコードと比較しながらより理解度を深めて行きたいです。
+
+フロントエンドは好きですが、これからは異なる分野の技術にも触れて行きます💪
+
+## 関連/参考リンク
+
+- [コンパイラ [コンピュータサイエンス教科書シリーズ] (コンピュータサイエンス教科書シリーズ 8)](https://www.amazon.co.jp/dp/4339027081?psc=1&ref=ppx_yo2ov_dt_b_product_details)
