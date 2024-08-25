@@ -16,16 +16,326 @@ published: true
 - typescript-eslintとはそもそも何か
 - 自作ルールについて
 
-## そもそもESLintはどのようにしてLinterとして実現しているのか
+## TSESTreeを見てみる
 
 本題に入る前に、前提としてESLintの仕組みのついて簡単に理解しておきましょう。
-
 ESLintは入力コードを元に、AST（抽象構文木）を生成します。そしてこのASTを元に、コードの解析を行います。
 実際に見てみましょう。
 
+以下のようなコードのASTを生成します。（サンプルコードは[await-thenable](https://typescript-eslint.io/rules/await-thenable/)のコードです。以降もそのルールがよく出てきます。）
+
+```ts
+const fooFn = async () => {
+  const createValue = async () => 'value';
+  await createValue();  
+}
+```
+
+（[Playground](https://typescript-eslint.io/play#ts=5.5.2&showAST=es&fileType=.ts&esQuery=N4IgZglgNgLgpgJxALhCAvkA&code=MYewdgzgLgBAZiEAxMMC8MCGECeZgwAUAlOgHwwDeAUDDKJLMAE4CmmUrAapgDYCurdFlz4ipNBQDkANz6CpAblpYA7pgCWTNh27zWJRXWoBfIA&eslintrc=N4KABGBEBOCuA2BTAzpAXGUEKQAIBcBPABxQGNoBLY-AWhXkoDt8B6AQwHd3K78ALRE3YAjJOiiJo0APbRI4MAF8QSoA&tsconfig=N4KABGBEDGD2C2AHAlgGwKYCcDyiAuysAdgM6QBcYoEEkJemy0eAcgK6qoDCAFutAGsylBm3TgwAXxCSgA&tokens=false)からでも確認できます。）
+
+ASTを読んでいただければわかるかと思いますが、先ほどのコードのASTでは型定義に関する記載はありません。これは間違ってはなく、正しい挙動になっています。
+
+では次に、以下のようなコードを用意しました。
+
+```ts
+const fooFn = async () => {
+  const createValue = async (): Promise<string> => 'value';
+  await createValue();  
+}
+```
+
+違いとしては、明示的にcreateValueの返り値の型を記載しています。生成された全てのASTは[こちら](https://typescript-eslint.io/play/#ts=5.5.2&showAST=es&fileType=.ts&esQuery=N4IgZglgNgLgpgJxALhCAvkA&code=MYewdgzgLgBAZiEAxMMC8MCGECeZgwAUAlOgHwwDeAUDDKJLMAE4CmmUrAapgDYCurdFlz4ixAFwwACsxABbAJYRWAHmjNFYAOYU0FAOQA3PoIMBuWlgDumRUzYdup1iUsBfIA&eslintrc=N4KABGBEBOCuA2BTAzpAXGUEKQAIBcBPABxQGNoBLY-AWhXkoDt8B6AQwHd3K78ALRE3YAjJOiiJo0APbRI4MAF8QSoA&tsconfig=N4KABGBEDGD2C2AHAlgGwKYCcDyiAuysAdgM6QBcYoEEkJemy0eAcgK6qoDCAFutAGsylBm3TgwAXxCSgA&tokens=false)から確認できます。
+
+今回のコードでは、以下のようなNodeが追加されています。
+```json
+{
+  "typeAnnotation": {
+    "type": "TSTypeReference",
+    "typeName": {
+      "type": "Identifier",
+      "decorators": [],
+      "name": "Promise",
+      "optional": false,
+      "range": [60, 67],
+      "loc": {
+        "start": {
+          "line": 2,
+          "column": 32
+        },
+        "end": {
+          "line": 2,
+          "column": 39
+        }
+      }
+    },
+    "typeArguments": {
+      "type": "TSTypeParameterInstantiation",
+      "range": [67, 75],
+      "params": [
+        {
+          "type": "TSStringKeyword",
+          "range": [68, 74],
+          "loc": {
+            "start": {
+              "line": 2,
+              "column": 40
+            },
+            "end": {
+              "line": 2,
+              "column": 46
+            }
+          }
+        }
+      ],
+      "loc": {
+        "start": {
+          "line": 2,
+          "column": 39
+        },
+        "end": {
+          "line": 2,
+          "column": 47
+        }
+      }
+    },
+    "range": [60, 75],
+    "loc": {
+      "start": {
+        "line": 2,
+        "column": 32
+      },
+      "end": {
+        "line": 2,
+        "column": 47
+      }
+    }
+  }
+}
+```
+
+これで明示的に型を書くことで、ASTに型情報も追記されることがわかりました。
+
 ## 型情報が必要とはどういうことか
 
+なんとなくtypescript-eslintが生成するASTについて理解したところで、今回の本題です。
+**型情報が必要**とはつまりどういうことなのでしょうか。
+
+今回は[await-thenable](https://typescript-eslint.io/rules/await-thenable/)を例に、以降の話を進めていきます。
+このルールは、thenメソッドが使えるかどうかで、awaitの使用を制御するルールです。そしてこのルールは型情報が必要と書かれています。
+
+サンプルを見てみましょう。
+
+❌ Invalid
+```ts
+// case1
+await 'value';
+
+// case2
+const createValue = () => 'value';
+await createValue();
+```
+
+✅ Valid
+
+```ts
+// case1
+await Promise.resolve('value');
+
+// case2
+const createValue = async () => 'value';
+await createValue();
+```
+
+公式にあるものそのままですが、Promiseを返すか返さないかで違うがあるのがわかるかと思います。
+この時点で読んでる方の中では、「asyncとかPromise.resoluveを使っているかどうかで判断すればいいのでは？」思われた方もいるかもしれません。実際に最初は自分もそう思いました。
+
+ここでもう一度ASTを見てましょう。今度は必要な部分だけ抜粋するのと、わかりやすいのでcase2の方で話を進めます。
+
+`const createValue = async () => 'value';`は以下のようになります。
+
+```json
+  "body": [
+    {
+      "type": "VariableDeclaration",
+      "declarations": [
+        {
+          "type": "VariableDeclarator",
+          "definite": false,
+          "id": {
+            "type": "Identifier",
+            "decorators": [],
+            "name": "createValue",
+            "optional": false,
+            ...etc 
+          },
+          "init": {
+            "type": "ArrowFunctionExpression",
+            "generator": false,
+            "id": null,
+            "params": [],
+            "body": {
+              "type": "Literal",
+              "value": "value",
+              "raw": "'value'",
+              ...etc 
+            },
+            "async": true,
+            "expression": true,
+            ...etc 
+          },
+          ...etc 
+        }
+      ],
+      "declare": false,
+      "kind": "const",
+      ...etc 
+    }
+  ],
+  "comments": [],
+  "sourceType": "script",
+  "tokens": [
+    {
+      "type": "Keyword",
+      "value": "const",
+      ...etc 
+    },
+    {
+      "type": "Identifier",
+      "value": "createValue",
+      ...etc 
+    },
+    {
+      "type": "Punctuator",
+      "value": "=",
+      ...etc 
+    },
+    {
+      "type": "Identifier",
+      "value": "async",
+      ...etc 
+    },
+    {
+      "type": "Punctuator",
+      "value": "(",
+      ...etc 
+    },
+    {
+      "type": "Punctuator",
+      "value": ")",
+      ...etc 
+    },
+    {
+      "type": "Punctuator",
+      "value": "=>",
+      ...etc 
+    },
+    {
+      "type": "String",
+      "value": "'value'",
+      ...etc 
+    },
+    {
+      "type": "Punctuator",
+      "value": ";",
+      ...etc 
+    }
+  ],
+  ...etc 
+```
+
+`async: true`という箇所があります。当然ですが`async`を使っていなければこちらはfalseとなります。
+
+次に、`await createValue();`の部分のASTを見てみましょう。
+
+```json
+  "body": [
+    {
+      "type": "ExpressionStatement",
+      "expression": {
+        "type": "AwaitExpression",
+        "argument": {
+          "type": "CallExpression",
+          "callee": {
+            "type": "Identifier",
+            "decorators": [],
+            "name": "createValue",
+            "optional": false,
+            ...etc
+          },
+          "arguments": [],
+          "optional": false,
+          ...etc
+        },
+        ...etc
+      },
+      ...etc
+    }
+  ],
+```
+
+awaitを使っているので`AwaitExpression`になっています。
+しかし、それ以外の情報はなく、`createValue`がPromiseを返すかどうかについての情報はないことが確認できるかと思います。
+
+await-thenableのルールとしては、createValueがPromiseを返さないのにawaitを使用していた場合エラー（もしくは警告）を出したいはずですが、ASTをみる限りではそれが難しいように思えます。
+この問題を解決するために、型情報を使用して対象のlintルールを実現しています。
+
+## どのようにして型の情報を得ているのか
+
+これまでの情報で、型情報がないとlintルールが難しいことが理解できたかと思います。
+では次に、typescript-eslintではどのようにして型情報を扱っているのでしょうか。
+
+**TSESTreeを見てみる**という見出しで、関数の返り値の型を明示的に記載した場合にはASTにその型定義も追記されることがわかりました。
+逆に言えば、型を明示的に書かないと型の情報はASTには記載されないです。
+
+ではどうやって実装されているのか疑問に思われるかもしれませんが、typescript-eslintではtypescriptのapiを使用して型のチェックを行っています。
+
+await-thenableの[実装コード](https://github.com/typescript-eslint/typescript-eslint/blob/main/packages/eslint-plugin/src/rules/await-thenable.ts)を見てみましょう。
+
+```ts
+import * as tsutils from 'ts-api-utils';
+
+...etc
+
+  create(context) {
+    const services = getParserServices(context);
+    const checker = services.program.getTypeChecker();
+
+    return {
+      AwaitExpression(node): void {
+        const type = services.getTypeAtLocation(node.argument);
+        if (isTypeAnyType(type) || isTypeUnknownType(type)) {
+          return;
+        }
+
+        const originalNode = services.esTreeNodeToTSNodeMap.get(node);
+
+        if (!tsutils.isThenableType(checker, originalNode.expression, type)) {
+          context.report({
+            messageId: 'await',
+            node,
+            suggest: [
+              {
+                messageId: 'removeAwait',
+                fix(fixer): TSESLint.RuleFix {
+                  const awaitKeyword = nullThrows(
+                    context.sourceCode.getFirstToken(node, isAwaitKeyword),
+                    NullThrowsReasons.MissingToken('await', 'await expression'),
+                  );
+
+                  return fixer.remove(awaitKeyword);
+                },
+              },
+            ],
+          });
+        }
+      },
+    };
+  },
+```
+
+`tsutils.isThenableType`では、受け取ったtypeにthenプロパティが存在し、さらに受け取ったnodeにパラメーターが一つでもあり、かつcallbackを返す場合にtrueになるので、それ以外の時にエラーを返すような実装になっています。
+
+getTypeCheckerのようなメソッドが呼び出されていることからもわかる通り、TypeScriptのAPIを内部で使用することで、typescritp-eslintはlintルールを実現しています。
 
 
-
-## 
+## 参考・関連
