@@ -1,0 +1,306 @@
+---
+title: "typescript-eslintでの型情報の利用とルール実装の実際"
+description: "この記事では、インターン生に「型情報が必要なESLintルールとは何か？」と聞かれた際に具体例を提示できなかったのと、色々調べると最初に想定していたものとかなり違っていたので、ブログにまとめることにしました。"
+date: "2024/09/01"
+published: true
+---
+
+## Intro
+
+最近インターン生に「型情報が必要なESLintルールとは何かとはなんですか？」と聞かれた際に具体例を提示できなかったのと、色々調べると最初に想定していたものとかなり違っていたので、ブログにまとめることにしました。
+
+## 書かないこと
+
+この記事では以下の内容については触れません。
+
+- flat configとは何か・設定方法
+- typescript-eslintとは何か・設定方法
+- 自作ルールの作成方法について
+
+## TSESTreeを見てみる
+
+本題に入る前に、先にtypescript-eslintがどのようなASTを生成するのか見てみましょう。
+(サンプルコードは[await-thenable](https://typescript-eslint.io/rules/await-thenable/)のコードです。以降もそのルールがよく出てきます。)
+
+```ts
+const fooFn = async () => {
+  const createValue = async () => 'value';
+  await createValue();  
+}
+```
+
+TypeScriptのASTの規約として、TSESTreeがあります。こちらのPlaygroundでは、先ほどのサンプルコードのASTの生成をチェックすることができます。
+読んでいただければわかるかと思いますが、先ほどのコードのASTでは型定義に関する記載はありません。これは間違ってはなく、正しい挙動になっています。一旦無視していただいて大丈夫です。
+
+では次に、以下のようなサンプルコードを用意しました。
+
+```diff
+const fooFn = async () => {
+-  const createValue = async () => 'value';
++  const createValue = async (): Promise<string> => 'value';
+  await createValue();  
+}
+```
+
+違いとしては、明示的にcreateValueの返り値の型を記載しています。
+そして今回のコードでは、以下のようなNodeが追加されています。（生成された全てのASTは[こちら](https://typescript-eslint.io/play/#ts=5.5.2&showAST=es&fileType=.ts&esQuery=N4IgZglgNgLgpgJxALhCAvkA&code=MYewdgzgLgBAZiEAxMMC8MCGECeZgwAUAlOgHwwDeAUDDKJLMAE4CmmUrAapgDYCurdFlz4ixAFwwACsxABbAJYRWAHmjNFYAOYU0FAOQA3PoIMBuWlgDumRUzYdup1iUsBfIA&eslintrc=N4KABGBEBOCuA2BTAzpAXGUEKQAIBcBPABxQGNoBLY-AWhXkoDt8B6AQwHd3K78ALRE3YAjJOiiJo0APbRI4MAF8QSoA&tsconfig=N4KABGBEDGD2C2AHAlgGwKYCcDyiAuysAdgM6QBcYoEEkJemy0eAcgK6qoDCAFutAGsylBm3TgwAXxCSgA&tokens=false)から確認できます。
+）
+```json
+{
+  "typeAnnotation": {
+    "type": "TSTypeReference",
+    "typeName": {
+      "type": "Identifier",
+      "decorators": [],
+      "name": "Promise",
+      "optional": false,
+      "range": [60, 67],
+      "loc": {
+        "start": {
+          "line": 2,
+          "column": 32
+        },
+        "end": {
+          "line": 2,
+          "column": 39
+        }
+      }
+    },
+    "typeArguments": {
+      "type": "TSTypeParameterInstantiation",
+      "range": [67, 75],
+      "params": [
+        {
+          "type": "TSStringKeyword",
+          "range": [68, 74],
+          "loc": {
+            "start": {
+              "line": 2,
+              "column": 40
+            },
+            "end": {
+              "line": 2,
+              "column": 46
+            }
+          }
+        }
+      ],
+      "loc": {
+        "start": {
+          "line": 2,
+          "column": 39
+        },
+        "end": {
+          "line": 2,
+          "column": 47
+        }
+      }
+    },
+    "range": [60, 75],
+    "loc": {
+      "start": {
+        "line": 2,
+        "column": 32
+      },
+      "end": {
+        "line": 2,
+        "column": 47
+      }
+    }
+  }
+}
+```
+
+ここまでで何が言いたかったのかいうと、**TSESTreeでは型推論をしたものはASTに生成されません。**
+以降の話でもこの内容がポイントになっています。
+
+## 型情報が必要とはどういうことか
+
+なんとなくtypescript-eslintが生成するASTについて理解したところで、今回の本題です。
+**型情報が必要**とはつまりどういうことなのでしょうか。
+
+結論としては、**ESTreeだけでは実装が難しいものを、TypeScriptのAPIを使って実装できる**ということです。
+
+ESTreeだけでは実装が難しいと言うのはつまりどう言うことでしょうか。今回は[await-thenable](https://typescript-eslint.io/rules/await-thenable/)を例に、以降の話を進めていきます。
+念の為簡単にこのルールの説明をしておくと、このルールは、thenメソッドが使えるかどうかで、awaitの使用を制御するルールです。そしてこのルールは型情報が必要と書かれています。
+
+サンプルコードを見てみましょう。
+
+**❌ Invalid**
+```ts
+// case1
+await 'value';
+
+// case2
+const createValue = () => 'value';
+await createValue();
+```
+
+**✅ Valid**
+
+```ts
+// case1
+await Promise.resolve('value');
+
+// case2
+const createValue = async () => 'value';
+await createValue();
+```
+
+公式にあるものそのままですが、Promiseを返すか返さないかで違いがあるのがわかるかと思います。
+この時点で読んでる方の中では、「asyncとかPromise.resoluveを使っているかどうかで判断すればいいのでは？🤔」と思われた方もいるかもしれません。実際に最初は自分もそう思いました。
+
+ここでもう一度ASTを見てましょう。今度は必要な部分だけ抜粋するのと、わかりやすいのでcase2の方で話を進めます。
+
+`const createValue = async () => 'value';`は以下のようになります。
+
+```json
+  "body": [
+    {
+      "type": "VariableDeclaration",
+      "declarations": [
+        {
+          "type": "VariableDeclarator",
+          "definite": false,
+          "id": {
+            "type": "Identifier",
+            "decorators": [],
+            "name": "createValue",
+            "optional": false,
+            ...etc 
+          },
+          "init": {
+            "type": "ArrowFunctionExpression",
+            "generator": false,
+            "id": null,
+            "params": [],
+            "body": {
+              "type": "Literal",
+              "value": "value",
+              "raw": "'value'",
+              ...etc 
+            },
+            "async": true, // ←  asyncが書かれているとここがtrueになる
+            "expression": true,
+            ...etc 
+          },
+          ...etc 
+        }
+      ],
+      "declare": false,
+      "kind": "const",
+      ...etc 
+    }
+  ],
+  "comments": [],
+  "sourceType": "script",
+  "tokens": [
+    ...etc
+  ],
+  ...etc 
+```
+
+`async: true`という箇所があります。これは構文としてasyncを使用している場合にtrueになります。
+当然ですが`async`を使っていなければこちらはfalseとなります。
+
+次に、`await createValue();`の部分のASTを見てみましょう。
+
+```json
+  "body": [
+    {
+      "type": "ExpressionStatement",
+      "expression": {
+        "type": "AwaitExpression",
+        "argument": {
+          "type": "CallExpression",
+          "callee": {
+            "type": "Identifier",
+            "decorators": [],
+            "name": "createValue",
+            "optional": false,
+            ...etc
+          },
+          "arguments": [],
+          "optional": false,
+          ...etc
+        },
+        ...etc
+      },
+      ...etc
+    }
+  ],
+```
+
+awaitを使っているので`AwaitExpression`というNodeになっています。
+しかし、それ以外の情報はなく、`createValue`がPromiseを返すかどうかについての情報はないことが確認できるかと思います。
+
+await-thenableのルールとしては、**createValueがPromiseを返さないのにawaitを使用していた場合エラー（もしくは警告）を出したいはずですが、ASTをみる限りではそれが難しい**ように思えます。
+この問題を解決するために、TypeScriptのAPIを使用して、lintルールを実現しています。
+
+## どのようにして型の情報を得ているのか
+
+これまでの情報で、型情報が得られないと、lintルールの作成が難しいことが理解できたかと思います。
+では次に、typescript-eslintではどのようにして型情報を扱っているのでしょうか。
+
+**TSESTreeを見てみる**という見出しで、関数の返り値の型を明示的に記載した場合には、ASTにその型定義も追記されることがわかりました。
+逆に言えば、型推論ではASTに記載されないです。
+
+ではどうやって実装されているのでしょうか。答えは**typescript-eslintではtypescriptのapiを使用して型のチェックを行っています。**
+
+await-thenableの[実装コード](https://github.com/typescript-eslint/typescript-eslint/blob/main/packages/eslint-plugin/src/rules/await-thenable.ts)を見てみましょう。
+
+```ts
+import * as tsutils from 'ts-api-utils';
+
+...etc
+
+  create(context) {
+    const services = getParserServices(context);
+    const checker = services.program.getTypeChecker();
+
+    return {
+      AwaitExpression(node): void {
+        const type = services.getTypeAtLocation(node.argument);
+        if (isTypeAnyType(type) || isTypeUnknownType(type)) {
+          return;
+        }
+
+        const originalNode = services.esTreeNodeToTSNodeMap.get(node);
+
+        if (!tsutils.isThenableType(checker, originalNode.expression, type)) {
+          context.report({
+            messageId: 'await',
+            node,
+            suggest: [
+              {
+                messageId: 'removeAwait',
+                fix(fixer): TSESLint.RuleFix {
+                  const awaitKeyword = nullThrows(
+                    context.sourceCode.getFirstToken(node, isAwaitKeyword),
+                    NullThrowsReasons.MissingToken('await', 'await expression'),
+                  );
+
+                  return fixer.remove(awaitKeyword);
+                },
+              },
+            ],
+          });
+        }
+      },
+    };
+  },
+```
+
+`tsutils.isThenableType`では、`受け取ったtypeにthenプロパティが存在&&受け取ったNodeにパラメーターが一つある&&callbackを返す`という場合にtrue（Promiseを返す式になっていること）になります。
+getTypeCheckerや、ts-api-utilsをさらにみていくと、TypeScriptのAPIを呼び出しています。
+
+typescript-eslintではこのようにして、型情報を使ったlintルールを実現しています。
+
+## まとめ
+
+今回ブログを書くにあたってtypescript-eslintのコードやドキュメントを読んでいたのですが、型情報を使ったLintルールを作るための工夫が垣間見え、そしてこれだけのコード量に対し使用者はほとんど内部構造を意識せずとも使えるようになっているのが開発体験素晴らしいなと感じることができました。筆者としても学びが多かったです。
+
+## 参考・関連
+
+- [await-thenable](https://typescript-eslint.io/rules/await-thenable/)
+- [await-thenable.ts](https://github.com/typescript-eslint/typescript-eslint/blob/main/packages/eslint-plugin/src/rules/await-thenable.ts)
