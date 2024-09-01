@@ -1,13 +1,13 @@
 ---
 title: "typescript-eslintでの型情報の利用とルール実装の実際"
-description: "この記事では、インターン生に「型情報が必要なESLintルールとは何かとはなんですか？」と聞かれた際に具体例を提示できなかったのと、色々調べると最初に想定していたものとかなり違っていたので、ブログにまとめることにしました。"
+description: "この記事では、インターン生に「型情報が必要なESLintルールとは何か？」と聞かれた際に具体例を提示できなかったのと、色々調べると最初に想定していたものとかなり違っていたので、ブログにまとめることにしました。"
 date: "2024/09/01"
 published: true
 ---
 
 ## Intro
 
-この記事では、インターン生に「型情報が必要なESLintルールとは何かとはなんですか？」と聞かれた際に具体例を提示できなかったのと、色々調べると最初に想定していたものとかなり違っていたので、ブログにまとめることにしました。
+最近インターン生に「型情報が必要なESLintルールとは何かとはなんですか？」と聞かれた際に具体例を提示できなかったのと、色々調べると最初に想定していたものとかなり違っていたので、ブログにまとめることにしました。
 
 ## 書かないこと
 
@@ -29,7 +29,7 @@ const fooFn = async () => {
 }
 ```
 
-TypeScriptのASTの規約として、TSESTreeがあります。[こちらのPlayground](https://typescript-eslint.io/play#ts=5.5.2&showAST=es&fileType=.ts&esQuery=N4IgZglgNgLgpgJxALhCAvkA&code=MYewdgzgLgBAZiEAxMMC8MCGECeZgwAUAlOgHwwDeAUDDKJLMAE4CmmUrAapgDYCurdFlz4ipNBQDkANz6CpAblpYA7pgCWTNh27zWJRXWoBfIA&eslintrc=N4KABGBEBOCuA2BTAzpAXGUEKQAIBcBPABxQGNoBLY-AWhXkoDt8B6AQwHd3K78ALRE3YAjJOiiJo0APbRI4MAF8QSoA&tsconfig=N4KABGBEDGD2C2AHAlgGwKYCcDyiAuysAdgM6QBcYoEEkJemy0eAcgK6qoDCAFutAGsylBm3TgwAXxCSgA&tokens=false)では、先ほどのサンプルコードのASTの生成をチェックすることができます。
+TypeScriptのASTの規約として、TSESTreeがあります。こちらのPlaygroundでは、先ほどのサンプルコードのASTの生成をチェックすることができます。
 読んでいただければわかるかと思いますが、先ほどのコードのASTでは型定義に関する記載はありません。これは間違ってはなく、正しい挙動になっています。一旦無視していただいて大丈夫です。
 
 では次に、以下のようなサンプルコードを用意しました。
@@ -119,7 +119,9 @@ const fooFn = async () => {
 なんとなくtypescript-eslintが生成するASTについて理解したところで、今回の本題です。
 **型情報が必要**とはつまりどういうことなのでしょうか。
 
-今回は[await-thenable](https://typescript-eslint.io/rules/await-thenable/)を例に、以降の話を進めていきます。
+結論としては、**ESTreeだけでは実装が難しいものを、TypeScriptのAPIを使って実装できる**ということです。
+
+ESTreeだけでは実装が難しいと言うのはつまりどう言うことでしょうか。今回は[await-thenable](https://typescript-eslint.io/rules/await-thenable/)を例に、以降の話を進めていきます。
 念の為簡単にこのルールの説明をしておくと、このルールは、thenメソッドが使えるかどうかで、awaitの使用を制御するルールです。そしてこのルールは型情報が必要と書かれています。
 
 サンプルコードを見てみましょう。
@@ -232,8 +234,8 @@ await createValue();
 awaitを使っているので`AwaitExpression`というNodeになっています。
 しかし、それ以外の情報はなく、`createValue`がPromiseを返すかどうかについての情報はないことが確認できるかと思います。
 
-**await-thenableのルールとしては、createValueがPromiseを返さないのにawaitを使用していた場合エラー（もしくは警告）を出したいはずですが、ASTをみる限りではそれが難しいように思えます。
-この問題を解決するために、型情報を使用して対象のlintルールを実現しています。**
+await-thenableのルールとしては、**createValueがPromiseを返さないのにawaitを使用していた場合エラー（もしくは警告）を出したいはずですが、ASTをみる限りではそれが難しい**ように思えます。
+この問題を解決するために、TypeScriptのAPIを使用して、lintルールを実現しています。
 
 ## どのようにして型の情報を得ているのか
 
