@@ -8,8 +8,7 @@ export default function Top() {
       <Heading title="Hi! I'm Yuto" />
       <div class="mt-5">
         <p class="font-medium">
-          都内在住の技術好きなエンジニアです。Rust / OSS / Developer
-          Experienceの向上に興味があります。
+          都内在住の技術好きなエンジニアです。
           <span class="ml-1">
             <a
               href="/profile"
