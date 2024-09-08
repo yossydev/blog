@@ -1,0 +1,35 @@
+---
+title: "CSS anchor positioningを1分で話した"
+description: "Web Developer Conference 2024にて、CSS anchor positioningについて1分で話しました。"
+date: "2024/09/08"
+published: true
+---
+
+## Intro
+
+[Web Developer Conference 2024](https://web-study.connpass.com/event/321711/)の「1分 de Web標準」にて、CSS Anchor Positioningについて1分で話しました。
+思い出として残しておく意味も込めて、ブログに残しておきます。
+
+## スライド
+
+![1 分 de Web 標準 - #wdc2024](https://github.com/user-attachments/assets/8b60e589-e8ea-4111-b04c-afa1f0d3c96e)
+
+## メモ
+
+- CSS Anchor Positioningについて発表します
+- CSS Anchor Positioningとは、メニュー、サブメニュー、ツールチップのようなUI時に複雑なレイアウトをシンプルに実装できるようになる新しいAPIです。
+- このAPIの核は、anchor-nameによるアンカー、positioned-elementによる配置された要素というの関係です。
+- anchor-nameでアンカーを設定することで、position-anchor側で要素の配置を簡単に設定できるようになります
+- この資料ではposition: fixed;になっていますが、position: absolute;にすることで、配置された要素の位置を、bottom: anchor(top), right: anchor(right)と指定することでアンカーを基準に配置位置を変更します
+- あとは
+  - anchor-sizeで要素のサイズ変更
+  - **@position-try**でアンカーの位置の自動調整
+  - **position-visibility**でアンカーがビューの外に出るまで配置された要素をビュー内に残すために使用します。
+- これまでに以上に簡単にメニュー系のUIを実現できそうで楽しみです。
+
+## 関連
+
+- [https://developer.chrome.com/blog/anchor-positioning-api?hl=ja#size_elements_with_anchor-size](https://developer.chrome.com/blog/anchor-positioning-api?hl=ja#size_elements_with_anchor-size)
+- [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_anchor_positioning/Using](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_anchor_positioning/Using)
+- [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_anchor_positioning](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_anchor_positioning)
+- [https://developer.mozilla.org/en-US/play](https://developer.mozilla.org/en-US/play)
