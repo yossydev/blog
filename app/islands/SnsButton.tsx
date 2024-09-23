@@ -5,7 +5,7 @@ const SnsButton: FC<{ title: string }> = ({ title }) => {
   if (typeof window === "undefined") {
     return (
       <div class="flex items-center justify-center mt-10 gap-3 ">
-        <div role="status" class="max-w-sm animate-pulse w-full">
+        <div class="max-w-sm animate-pulse w-full">
           <div class="h-11 bg-gray-200 rounded-3xl w-full" />
         </div>
       </div>
