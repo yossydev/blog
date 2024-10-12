@@ -1,5 +1,5 @@
 ---
-title: "Chrome130で追加されたCSSNestedDeclarationsについて理解する"
+title: "Chrome 130でのCSSネスティング改善: CSSNestedDeclarationsの詳細"
 description: "web.devが先日、CSS nesting improves with CSSNestedDeclarationsというブログを公開しました。このブログでは、CSSネスティングの仕様にCSSNestedDeclarationsが追加されたことについて書かれています。導入背景やCSSOMの動きなどが少し面白かったのでブログにまとめました。"
 date: "2024/10/13"
 published: true
@@ -18,7 +18,7 @@ published: true
 - CSS nestingとは
 - CSSのparse処理について
 
-## CSS nestingであったバグ
+## CSSネスティングでの既存のバグ
 
 まず既存のCSSネスティングであったバグについてです。
 以下のようなCSSを書いた場合、皆さんはどのようなUIになると思いますか？？
@@ -43,7 +43,7 @@ published: true
 
 （左: Chrome129 / 右: Chrome130）
 
-しかしCSSの仕様としては、後ろに書かれたコードが適用となるはずです。これがChrome129までのCSSネスティングのバグとしてありました。
+しかし、CSSの仕様としては後ろに書かれたコードが適用されるはずです。これがChrome 129までのCSSネスティングに関するバグでした。
 
 ## なぜこのようなバグが存在するのか
 
@@ -87,7 +87,7 @@ published: true
 }
 ```
 
-`background-color: green`が`@media screen`よりも上に来てしまいました。これではCSSの優先順位的に、`min-width: 900px`が正の時はredが適用されます。
+この結果、`background-color: green`が`@media screen`よりも上に来てしまいました。これではCSSの優先順位的に、`min-width: 900px`が正の時はredが適用されます。
 
 （そもそも常に`background-color: green`にしたいなら`background-color: red`いらないのでは？みたいなご意見はごもっともです）
 
