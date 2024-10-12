@@ -9,7 +9,7 @@ published: true
 
 [web.dev](https://web.dev/?hl=en)が先日、[CSS nesting improves with CSSNestedDeclarations](https://web.dev/blog/css-nesting-cssnesteddeclarations?hl=en)というブログを公開しました。
 
-このブログでは、CSSネスティングの仕様に[CSSNestedDeclarations]が追加されたことについて書かれています。果たして業務でこのブログで書かれてるバグに出くわすことはなかった気もしますが、CSSOMの動きなど少し面白かったので書くことにしました。
+このブログでは、CSSネスティングの仕様に`CSSNestedDeclarations`が追加されたことについて書かれています。果たして業務でこのブログで書かれてるバグに出くわすことはなかった気もしますが、CSSOMの動きなど少し面白かったので書くことにしました。
 
 ## 話さないこと
 
@@ -74,13 +74,15 @@ published: true
           - background-color: red
 ```
 
-`background-color: green`は`CSSStyleRule.style`に含まれているものの、`@media screen`の後に定義されたかどうかはわからないです。そのため、パースされたCSSをみると、以下のようになります。
+`background-color: green`は`CSSStyleRule.style`に含まれているものの、`@media screen`の後に定義されたかどうかはわからないです。そのため、パースされたCSSをみると、以下のようになります。（出力された結果から見やすくなるように少し整形しています）
 
 ```
 .foo {
-  width: fit-content; background-color: green;
+  width: fit-content; 
+  background-color: green;
+
   @media screen and (min-width: 900px) {
-  & { background-color: red; }
+    background-color: red;
   }
 }
 ```
@@ -89,7 +91,41 @@ published: true
 
 （そもそも常に`background-color: green`にしたいなら`background-color: red`いらないのでは？みたいなご意見はごもっともです）
 
-
 ## CSSNestedDeclarationsの追加
 
+先ほどの問題を解消するために、CSS Working Groupは新しく[nested declarations rule](https://drafts.csswg.org/css-nesting/#nested-declarations-rule)を追加しました。
+
+同じCSSの内容に対して、Chrome130からは以下のようなデータ構造になります。
+
+```
+↳ CSSStyleRule
+  .type = STYLE_RULE
+  .selectorText = ".foo"
+  .resolvedSelectorText = ".foo"
+  .specificity = (0,1,0)
+  .style (CSSStyleDeclaration, 1) =
+    - width: fit-content
+  .cssRules (CSSRuleList, 2) =
+    ↳ CSSMediaRule
+      .type = MEDIA_RULE
+      .cssRules (CSSRuleList, 1) =
+        ↳ CSSNestedDeclarations
+          .style (CSSStyleDeclaration, 1) =
+            - background-color: red
+    ↳ CSSNestedDeclarations
+      .style (CSSStyleDeclaration, 1) =
+        - background-color: green
+```
+
+今度は`CSSNestedDeclarations`というものが追加されているのがわかるかと思います。
+これにより、パーサーは以前の宣言の位置を維持させることができるようになりました。
+
 ## まとめ
+
+今回はChrome130で追加される`CSSNestedDeclarations`について、導入背景と一緒に見ていきました。
+CSSのパースについて、正直今まで考えて開発をしてこなかったので、今回の内容で興味を持つきっかけになりました。特に今回はあまり触れられていないのですが、[nested declarations rule](https://drafts.csswg.org/css-nesting/#nested-declarations-rule)の具体的な実装内容みたいなところも、時間があれば読んでみたいと思います。
+
+## 参考・関連
+
+- [CSS nesting improves with CSSNestedDeclarations](https://web.dev/blog/css-nesting-cssnesteddeclarations?hl=en)
+- [nested declarations rule](https://drafts.csswg.org/css-nesting/#nested-declarations-rule)
