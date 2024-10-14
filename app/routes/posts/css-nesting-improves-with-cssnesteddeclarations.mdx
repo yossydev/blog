@@ -2,6 +2,8 @@
 title: "Chrome 130でのCSSネスティング改善: CSSNestedDeclarationsの詳細"
 description: "web.devが先日、CSS nesting improves with CSSNestedDeclarationsというブログを公開しました。このブログでは、CSSネスティングの仕様にCSSNestedDeclarationsが追加されたことについて書かれています。導入背景やCSSOMの動きなどが少し面白かったのでブログにまとめました。"
 date: "2024/10/13"
+updatedAt: "2024/10/14"
+path: "css-nesting-improves-with-cssnesteddeclarations"
 published: true
 ---
 
@@ -9,7 +11,7 @@ published: true
 
 [web.dev](https://web.dev/?hl=en)が先日、[CSS nesting improves with CSSNestedDeclarations](https://web.dev/blog/css-nesting-cssnesteddeclarations?hl=en)というブログを公開しました。
 
-このブログでは、CSSネスティングの仕様に`CSSNestedDeclarations`が追加されたことについて書かれています。果たして業務でこのブログで書かれてるバグに出くわすことはなかった気もしますが、CSSOMの動きなど少し面白かったので書くことにしました。
+このブログでは、CSSネスティングの仕様に`CSSNestedDeclarations`が追加されたことについて書かれています。果たして業務でこのブログで書かれてるようなような動きに出くわすことはなかった気もしますが、CSSOMの動きなど少し面白かったので書くことにしました。
 
 ## 話さないこと
 
@@ -18,9 +20,9 @@ published: true
 - CSS nestingとは
 - CSSのparse処理について
 
-## CSSネスティングでの既存のバグ
+## CSSネスティングの以前までの仕様
 
-まず既存のCSSネスティングであったバグについてです。
+まずCSSネスティングの以前までの仕様についてです。
 以下のようなCSSを書いた場合、皆さんはどのようなUIになると思いますか？？
 
 ```css
@@ -43,14 +45,29 @@ published: true
 
 （左: Chrome129 / 右: Chrome130）
 
-しかし、CSSの仕様としては後ろに書かれたコードが適用されるはずです。これがChrome 129までのCSSネスティングに関するバグでした。
+しかし、CSSの仕様としては後ろに書かれたコードが適用されるはずです。これがChrome 129までのCSSネスティングの仕様でした。
 
-## なぜこのようなバグが存在するのか
+## なぜこのような仕様だったのか
 
-なぜこのようなバグが存在していたのでしょうか？
-それは、CSSOMを使ったパース処理が関係しています。
+なぜこのような仕様になっていたのでしょうか？
 
-先ほどのCSSに対して生成されたCSSOMをみてみましょう。
+[Intent to Ship: The Nested Declarations Rule](https://groups.google.com/a/chromium.org/g/blink-dev/c/Do1Xyu-PzyU/m/Xn1IjDtPAQAJ)というやり取りの中には、以下のように記載されています。
+
+> This was at the time done intentionally for a mix of CSSOM and historical reasons, and all implementations of CSS Nesting currently agree on this behavior. However, it turns out this shifting behavior isn’t what authors expect (WebKit blog post), and the CSSWG now consider the decision a mistake. In October 2023, the CSSWG resolved to not do the shifting behavior anymore 
+
+要約すると以下のようになります。
+
+- CSSOMの歴史的背景から、Shifting(入れ替わり)されるような挙動で実装を行った
+- しかし作者（authorsの直訳、多分私たちのような開発者のことを指していると思う...？？）が想定していた動きと異なっていた
+- そしてCSSWGがこのShiftingするような仕様をmistakeだとした
+
+実装した時点ではその方針で進んでいたけど、それを使用する開発者にとっては思っていた挙動と違ったので直すことにした。ということらしいです。
+
+
+## どのようにShitingされるのか
+
+では次に、実際にどのようにShitingされるのをみてみましょう。
+先ほどのCSSに対して生成されたCSSOMを例にします。
 
 ```
 ↳ CSSStyleRule
@@ -93,7 +110,7 @@ published: true
 
 ## CSSNestedDeclarationsの追加
 
-先ほどの問題を解消するために、CSS Working Groupは新しく[nested declarations rule](https://drafts.csswg.org/css-nesting/#nested-declarations-rule)を追加しました。
+CSS Working GroupはShiftingを解消するために、新しく[nested declarations rule](https://drafts.csswg.org/css-nesting/#nested-declarations-rule)を追加しました。
 
 同じCSSの内容に対して、Chrome130からは以下のようなデータ構造になります。
 
@@ -120,12 +137,35 @@ published: true
 今度は`CSSNestedDeclarations`というものが追加されているのがわかるかと思います。
 これにより、パーサーは以前の宣言の位置を維持させることができるようになりました。
 
+### `@nest`
+
+今回`CSSNestedDeclarations`が追加されましたが、最初の提案では`@nest`というものが提案されていたようでした。（[CSS Nesting: @nest](https://github.com/WebKit/standards-positions/issues/337)）
+
+そしてこの提案に関して、Webkit側が拒否しています。
+
+> WebKit strongly opposes introducing an @nest rule for this purpose. We don't think expanding the syntax space of CSS for the convenience of CSSOM representation is an acceptable cost to authors, and prefer a solution that represents interleaved style declarations in the CSSOM in a way that does not have an externality on CSS syntax.
+> ref: https://github.com/WebKit/standards-positions/issues/337#issuecomment-2078329470
+
+CSSOMのために名前空間を拡張するのは好ましくなく、CSSの構文に影響を与えないように、CSSOMのインターフェースを拡張することが理想とのことです。
+あまりここは本題と逸れるので、このくらいにしておきます。
+
 ## まとめ
 
 今回はChrome130で追加される`CSSNestedDeclarations`について、導入背景と一緒に見ていきました。
 CSSのパースについて、正直今まで考えて開発をしてこなかったので、今回の内容で興味を持つきっかけになりました。特に今回はあまり触れられていないのですが、[nested declarations rule](https://drafts.csswg.org/css-nesting/#nested-declarations-rule)の具体的な実装内容みたいなところも、時間があれば読んでみたいと思います。
 
+## 追記・編集
+
+いくつか今回の内容でフィードバックいただいたので、内容の修正を加えています。
+
+- 10/14: **バグという表現が適切ではなかっため、CSSの仕様であるという言葉の使い方に修正しました。**
+- 10/14: **CSSのshitingの問題について追記しました。**
+
+ご指摘ありがとうございました🙇‍♂️
+
 ## 参考・関連
 
 - [CSS nesting improves with CSSNestedDeclarations](https://web.dev/blog/css-nesting-cssnesteddeclarations?hl=en)
 - [nested declarations rule](https://drafts.csswg.org/css-nesting/#nested-declarations-rule)
+- [Intent to Ship: The Nested Declarations Rule](https://groups.google.com/a/chromium.org/g/blink-dev/c/Do1Xyu-PzyU/m/Xn1IjDtPAQAJ) 
+- [Intent to Ship: Stable Bare Declarations (@nest)](https://groups.google.com/a/chromium.org/g/blink-dev/c/prg4CN0eEGg)

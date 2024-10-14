@@ -77,7 +77,8 @@ function generatePost() {
       const updatedData = data
         .replace(/{{title}}/g, title) // 文書全体のタイトルプレースホルダを置き換え
         .replace(/{{description}}/g, description)
-        .replace(/{{date}}/g, currentDate);
+        .replace(/{{date}}/g, currentDate)
+        .replace(/{{filePath}}/g, filePath);
 
       writeFile(filePath, updatedData, (err) => {
         if (err) {
