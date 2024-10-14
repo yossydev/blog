@@ -5,11 +5,20 @@ date: "2024/10/13"
 published: true
 ---
 
+## 追記・編集: 10/14
+
+いくつか今回の内容でフィードバックいただいたので、内容の修正を加えています。
+
+- バグだと少しニュアンスが異なる
+- Hoistの内容を追加: [https://groups.google.com/a/chromium.org/g/blink-dev/c/prg4CN0eEGg](https://groups.google.com/a/chromium.org/g/blink-dev/c/prg4CN0eEGg)
+
+ご指摘ありがとうございました🙇‍♂️
+
 ## Intro
 
 [web.dev](https://web.dev/?hl=en)が先日、[CSS nesting improves with CSSNestedDeclarations](https://web.dev/blog/css-nesting-cssnesteddeclarations?hl=en)というブログを公開しました。
 
-このブログでは、CSSネスティングの仕様に`CSSNestedDeclarations`が追加されたことについて書かれています。果たして業務でこのブログで書かれてるバグに出くわすことはなかった気もしますが、CSSOMの動きなど少し面白かったので書くことにしました。
+このブログでは、CSSネスティングの仕様に`CSSNestedDeclarations`が追加されたことについて書かれています。果たして業務でこのブログで書かれてるようなような動きに出くわすことはなかった気もしますが、CSSOMの動きなど少し面白かったので書くことにしました。
 
 ## 話さないこと
 
@@ -18,9 +27,9 @@ published: true
 - CSS nestingとは
 - CSSのparse処理について
 
-## CSSネスティングでの既存のバグ
+## CSSネスティングでの以前までの仕様
 
-まず既存のCSSネスティングであったバグについてです。
+まずCSSネスティングの以前までの仕様についてです。
 以下のようなCSSを書いた場合、皆さんはどのようなUIになると思いますか？？
 
 ```css
@@ -43,11 +52,11 @@ published: true
 
 （左: Chrome129 / 右: Chrome130）
 
-しかし、CSSの仕様としては後ろに書かれたコードが適用されるはずです。これがChrome 129までのCSSネスティングに関するバグでした。
+しかし、CSSの仕様としては後ろに書かれたコードが適用されるはずです。これがChrome 129までのCSSネスティングの仕様でした。
 
-## なぜこのようなバグが存在するのか
+## なぜこのような仕様だったのか
 
-なぜこのようなバグが存在していたのでしょうか？
+なぜこのような仕様になっていたのでしょうか？
 それは、CSSOMを使ったパース処理が関係しています。
 
 先ほどのCSSに対して生成されたCSSOMをみてみましょう。
