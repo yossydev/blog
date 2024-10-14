@@ -1,7 +1,12 @@
 import type { FC } from "hono/jsx";
 import { LINK } from "../constants";
 
-const SnsButton: FC<{ title: string }> = ({ title }) => {
+type Props = {
+  title: string;
+  path: string;
+};
+
+const SnsButton: FC<Props> = ({ title, path }) => {
   if (typeof window === "undefined") {
     return (
       <div class="flex items-center justify-center mt-10 gap-3 ">
@@ -36,6 +41,14 @@ const SnsButton: FC<{ title: string }> = ({ title }) => {
         class="bg-gray-200 flex items-center text-sm rounded-3xl py-3 px-4"
       >
         Follow @yossydev
+      </a>
+      <a
+        href={`${LINK.GITHUB}/blog/blob/main/app/routes/posts/${path}.mdx`}
+        target={"_blank"}
+        rel={"noreferrer"}
+        class="bg-blue-200 flex items-center text-sm rounded-3xl py-3 px-4"
+      >
+        ✏ Edit
       </a>
     </div>
   );
