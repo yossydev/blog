@@ -1,6 +1,5 @@
 import type { FC } from "hono/jsx";
 import { createRoute } from "honox/factory";
-import { Link } from "honox/server";
 import { Heading } from "../../components/Heading";
 import { LINK } from "../../constants";
 
@@ -93,7 +92,9 @@ export default createRoute((c) => {
         class="md:w-[600px] w-full md:h-auto h-40"
       />
       <Heading title="Contact" />
-      <Text text="お仕事や登壇のご依頼などはXのDMもしくはcodeyy021@gmail.comまでご連絡ください。" />
+      <Text
+        text={`お仕事や登壇のご依頼などはXのDMもしくは${LINK.EMAIL}までご連絡ください。`}
+      />
       <br />
       <Heading title="Link" />
       <ul class="text-lg mt-6">
