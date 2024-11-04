@@ -1,5 +1,16 @@
 [
   {
+    "title": "成長中のFanTech領域におけるBiomeを活用したCIの高速化 / fantech-web-biome",
+    "link": "https://speakerdeck.com/cyberagentdevelopers/fantech-web-biome",
+    "pubDate": "Wed, 30 Oct 2024 00:00:00 -0400",
+    "content:encoded": "本セッションでは、メディア事業部のFantech事業部の一つである、CLプロダクトにおいて、Rust製のツールチェインであるBiomeを活用したCIの実行時間の高速化について話します。Biomeとは何かという基本的なことを話した後、Biomeを導入した背景、Biomeの現状の課題を踏まえてどのように導入/PrettierとESLintからの移行を進めたか、そして最後に、Biomeの今後を考えたCLでの対応方法について話します。\r\n\r\nhttps://cadc.cyberagent.co.jp/2024/sessions/fantech-web-biome/",
+    "content:encodedSnippet": "本セッションでは、メディア事業部のFantech事業部の一つである、CLプロダクトにおいて、Rust製のツールチェインであるBiomeを活用したCIの実行時間の高速化について話します。Biomeとは何かという基本的なことを話した後、Biomeを導入した背景、Biomeの現状の課題を踏まえてどのように導入/PrettierとESLintからの移行を進めたか、そして最後に、Biomeの今後を考えたCLでの対応方法について話します。\r\n\r\nhttps://cadc.cyberagent.co.jp/2024/sessions/fantech-web-biome/",
+    "content": "本セッションでは、メディア事業部のFantech事業部の一つである、CLプロダクトにおいて、Rust製のツールチェインであるBiomeを活用したCIの実行時間の高速化について話します。Biomeとは何かという基本的なことを話した後、Biomeを導入した背景、Biomeの現状の課題を踏まえてどのように導入/PrettierとESLintからの移行を進めたか、そして最後に、Biomeの今後を考えたCLでの対応方法について話します。\r\n\r\nhttps://cadc.cyberagent.co.jp/2024/sessions/fantech-web-biome/",
+    "contentSnippet": "本セッションでは、メディア事業部のFantech事業部の一つである、CLプロダクトにおいて、Rust製のツールチェインであるBiomeを活用したCIの実行時間の高速化について話します。Biomeとは何かという基本的なことを話した後、Biomeを導入した背景、Biomeの現状の課題を踏まえてどのように導入/PrettierとESLintからの移行を進めたか、そして最後に、Biomeの今後を考えたCLでの対応方法について話します。\r\n\r\nhttps://cadc.cyberagent.co.jp/2024/sessions/fantech-web-biome/",
+    "guid": "https://speakerdeck.com/cyberagentdevelopers/fantech-web-biome",
+    "isoDate": "2024-10-30T04:00:00.000Z"
+  },
+  {
     "title": "Introduction to React Compiler",
     "link": "https://speakerdeck.com/yossydev/introduction-to-react-compiler",
     "pubDate": "Sun, 04 Aug 2024 00:00:00 -0400",
@@ -18,17 +29,6 @@
     "contentSnippet": "",
     "guid": "https://speakerdeck.com/yossydev/fast-jsx-dont-clone-props-object-number-28768",
     "isoDate": "2024-04-24T04:00:00.000Z"
-  },
-  {
-    "title": "2023 Spindle Review",
-    "link": "https://speakerdeck.com/yossydev/2023-spindle-review",
-    "pubDate": "Fri, 12 Jan 2024 00:00:00 -0500",
-    "content:encoded": "2023年度にSpindleに対して自分が取り組んだこと、学んだことの話です。",
-    "content:encodedSnippet": "2023年度にSpindleに対して自分が取り組んだこと、学んだことの話です。",
-    "content": "2023年度にSpindleに対して自分が取り組んだこと、学んだことの話です。",
-    "contentSnippet": "2023年度にSpindleに対して自分が取り組んだこと、学んだことの話です。",
-    "guid": "https://speakerdeck.com/yossydev/2023-spindle-review",
-    "isoDate": "2024-01-12T05:00:00.000Z"
   },
   {
     "title": "Core Web Vitalsについて",
