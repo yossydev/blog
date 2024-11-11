@@ -1,0 +1,79 @@
+---
+title: "eslint v9で追加されたunused disable directivesとbiomeは相性がいいかもしれない"
+description: "a"
+date: "2024/12/01"
+updatedAt: "2024/12/01"
+path: "eslint-v9-unused-disable-directives-biome"
+published: false
+---
+
+本記事は、[ユウトの一人アドベントカレンダー](https://adventar.org/calendars/9981)の1日目です
+
+## Intro
+
+最近v9へのバージョンアップを行ったんですが、その際に`lint --fix`を行うとなぜか大量のeslint-disableコメントが削除されるようになりました。
+
+これはeslint v9.5で追加された`remove unused eslint-disable directive`という機能によるものなんですが、これを使えばBiomeへの以降もちょっとやりやすくなるのかなと思った話をします。
+
+## unused disable directivesとは
+
+[feat: warn by default for unused disable directives](https://github.com/eslint/eslint/pull/17879)というPRで、eslint本体に取り込まれた機能です。
+正確に言えば実装はこの機能が追加されたPRは[こっち](https://github.com/eslint/eslint/pull/17212)なんですが、実装コードは今回の話には関係ないので一旦このまま進めます。
+
+動き自体はシンプルで、意味がないeslint-disableコメントがあった場合、warnが出るようになって、`--fix`を行うとauto fixするという機能です。
+
+なのでおそらく大小はあれど、不要なeslint-disableはそこそこのプロダクト規模ならあると思うので、影響を受けた方も多いかと思います。
+
+## 前提
+
+以降の話に進む前に、少し筆者の考えを書いておきます。
+
+筆者は、現在のBiomeのLinterの上手な使い方は、ESLintと共存させることだと思っています。
+Biomeの恩恵を受けつつ、足りない機能、カスタムルールやtypescript-eslintを使用し、型情報のLintなども可能になるためです。
+
+これは新規プロダクトよりも、すでにある程度Lintに依存しているプロダクトの方がメリットはあるかと思います。しかし、そうなった場合に一つ課題としてあるのが、ESLintルールの後始末です。
+
+例えば、eslintのコアルールをいくつかBiomeに置き換えたいとします。この中のルールにはBiomeに移行できるものもあれば、そうでないものも色々混ざっています。
+そうでないものは引き続き個別にルールをonにして使えば良いかと思いますが、Biomeで使えるものは速度面でもなるべく移行したいです。
+
+しかし、ESLintのコアルールは、通常定義されていないルールをeslint-disableしようとすると、`Definition for rule 'foo rule' was not found`というエラーになりますが、コアルールに限ってはこれはならないです。
+なので例えば、以下のようなコードがあったとします。
+
+✅ 存在しないルールなのでエラーになる
+```js
+/* eslint-disable non-existent-rule */
+
+function foo() {
+  console.log("Hello");
+}
+```
+
+❌ コアルールなのでそのまま残り続ける
+```js
+/* eslint-disable camelcase */
+
+const my_variable = 123;
+```
+
+eslint-disableなのでminifyしていれば削除されるとはいえ、なるべくデッドコードは無くしておきたいです。
+
+## unused disable directivesで解決
+
+遠回りしましたが、今回伝えたかったことです。
+最初にもお伝えした通り、eslint v9からは、無効な`eslint-disable`があった場合、warnが出るようになり、auto fixしてくれるようにもなりました。
+
+つまり、**Biome移行時の一つのmigrateコマンドとして機能としてくれるということ**です。
+
+しかも、場合によっては移行時に意図せず無効になってしまっているルールにも気づくことができます。筆者はこれを実際に体験しました。
+
+## まとめ
+
+今更v9のことかよと思われた方もいるかもしれませんが、筆者は基本Reactプロジェクトしか見ていないので、eslint-plugin-react-hooksの影響で揚げたくてもなかなかあげられませんでした。
+最近やっとv9対応してくれたのであげてみて、今回の内容に繋がった次第です。
+
+Biomeも着々とplugin対応が進んでいるので、今後が楽しみです。
+
+## 関連・参考
+
+- [feat: warn by default for unused disable directives](https://github.com/eslint/eslint/pull/17879)
+- [feat: Support custom severity when reporting unused disable directives](https://github.com/eslint/eslint/pull/17212)
