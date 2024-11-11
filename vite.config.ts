@@ -8,6 +8,7 @@ import remarkFrontmatter from "remark-frontmatter";
 import remarkMdxFrontmatter from "remark-mdx-frontmatter";
 import { defineConfig } from "vite";
 import rehypeTOC from "./app/libs/vite-remark-toc-plugin";
+import fs from "node:fs";
 
 const entry = "./app/server.ts";
 
@@ -36,6 +37,12 @@ export default defineConfig(({ mode }) => {
       }),
       ssg({ entry }),
     ],
+    server: {
+      https: {
+        key: fs.readFileSync("./localhost-key.pem"),
+        cert: fs.readFileSync("./localhost.pem"),
+      },
+    },
     optimizeDeps: {},
   };
 });

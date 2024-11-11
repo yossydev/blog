@@ -10,3 +10,8 @@ package-lock.json
 yarn.lock
 pnpm-lock.yaml
 bun.lockb
+
+# https
+localhost-key.pem
+localhost.pem
+
