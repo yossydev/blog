@@ -42,7 +42,7 @@ const TranslatorButton: FC<Props> = ({ content }) => {
     ) {
       // biome-ignore lint: lint/suspicious/noExplicitAny
       const translator = await (self.translation as any).createTranslator({
-        sourceLanguage: value,
+        sourceLanguage: "ja",
         targetLanguage: e.target.value,
       });
       await translator.translate(content);
