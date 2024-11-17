@@ -46,7 +46,6 @@ const TranslatorButton: FC<PropsWithChildren<Props>> = ({
   // biome-ignore lint: lint/suspicious/noExplicitAny
   const handleSelectChange = async (e: any) => {
     setValue(e.target.value);
-    setTranslatedContent("<div> hello <div/>");
 
     if (
       "translation" in self &&
