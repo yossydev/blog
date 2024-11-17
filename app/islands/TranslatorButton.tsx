@@ -45,7 +45,8 @@ const TranslatorButton: FC<Props> = ({ content }) => {
         sourceLanguage: "ja",
         targetLanguage: e.target.value,
       });
-      await translator.translate(content);
+      const res = await translator.translate(content);
+      console.log("res", res);
     } else {
       window.alert("The Translator API is not supported");
     }
