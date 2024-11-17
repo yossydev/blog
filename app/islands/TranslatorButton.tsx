@@ -40,13 +40,17 @@ const TranslatorButton: FC<Props> = ({ content }) => {
       // biome-ignore lint: lint/suspicious/noExplicitAny
       "createTranslator" in (self.translation as any)
     ) {
-      // biome-ignore lint: lint/suspicious/noExplicitAny
-      const translator = await (self.translation as any).createTranslator({
-        sourceLanguage: "ja",
-        targetLanguage: e.target.value,
-      });
-      const res = await translator.translate(content);
-      console.log("res", res);
+      try {
+        // biome-ignore lint: lint/suspicious/noExplicitAny
+        const translator = await (self.translation as any).createTranslator({
+          sourceLanguage: "ja",
+          targetLanguage: e.target.value,
+        });
+        const res = await translator.translate(content);
+        console.log("res", res);
+      } catch (error) {
+        console.error("translator error", error);
+      }
     } else {
       window.alert("The Translator API is not supported");
     }
