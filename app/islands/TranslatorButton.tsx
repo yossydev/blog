@@ -1,4 +1,4 @@
-import { useState, type FC } from "hono/jsx";
+import { type FC, useState } from "hono/jsx";
 
 type SupportedTranslatorAPI =
   | "en"
