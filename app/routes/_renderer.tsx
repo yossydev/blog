@@ -20,6 +20,10 @@ export default jsxRenderer(({ children, title, description }) => {
         <meta name="twitter:site" content="@yossydev" />
         <meta name="twitter:image" content={`https://yossy.dev${_image}`} />
         <meta name="twitter:card" content="summary" />
+        <meta
+          http-equiv="origin-trial"
+          content="AkwxmXeiTVIX8BZoXBhoT6N+EgwJbwpLsr/ryGyFsPE538JL2YK/pnkwhv2EIXqCe77Qrw5TcHsC/AHmZfommAUAAABkeyJvcmlnaW4iOiJodHRwczovL3lvc3N5LmRldjo0NDMiLCJmZWF0dXJlIjoiVHJhbnNsYXRpb25BUEkiLCJleHBpcnkiOjE3NTMxNDI0MDAsImlzU3ViZG9tYWluIjp0cnVlfQ=="
+        />
         <Script src="/app/client.ts" />
         {import.meta.env.PROD ? (
           <link href="/static/assets/style.css" rel="stylesheet" />
