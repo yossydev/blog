@@ -1,7 +1,7 @@
 import { jsxRenderer } from "hono/jsx-renderer";
+import ContentWrapper from "../../islands/ContentWrapper";
 import LikeButton from "../../islands/LikeButton";
 import SnsButton from "../../islands/SnsButton";
-import ContentWrapper from "../../islands/ContentWrapper";
 
 export default jsxRenderer(({ children, Layout, frontmatter }) => {
   const _title = `${frontmatter?.title} | yossy.dev`;
