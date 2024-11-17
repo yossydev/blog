@@ -8,21 +8,19 @@ export default jsxRenderer(({ children, Layout, frontmatter }) => {
   return (
     <Layout title={_title} description={frontmatter?.description}>
       <div class="text-right mt-3">
-        <TranslatorButton content={children?.toString() as string} />
-      </div>
-      <div class="markdown">
-        <h1>{frontmatter?.title}</h1>
-        <dl class="flex items-center gap-3">
-          <div class="flex items-center gap-1">
-            <dt>publishedAt: </dt>
-            <dd>{frontmatter?.date}</dd>
-          </div>
-          <div class="flex items-center gap-1">
-            <dt>updatedAt: </dt>
-            <dd>{frontmatter?.updatedAt}</dd>
-          </div>
-        </dl>
-        {children}
+        <TranslatorButton content={children?.toString() as string}>
+          <h1>{frontmatter?.title}</h1>
+          <dl class="flex items-center gap-3">
+            <div class="flex items-center gap-1">
+              <dt>publishedAt: </dt>
+              <dd>{frontmatter?.date}</dd>
+            </div>
+            <div class="flex items-center gap-1">
+              <dt>updatedAt: </dt>
+              <dd>{frontmatter?.updatedAt}</dd>
+            </div>
+          </dl>
+        </TranslatorButton>
       </div>
       <LikeButton />
       <SnsButton title={_title} path={frontmatter?.path ?? ""} />
