@@ -1,0 +1,111 @@
+---
+title: "Translator APIを使ったブログの自動翻訳"
+description: "a"
+date: "2024/12/03"
+updatedAt: "2024/12/03"
+path: "google-translator-api"
+published: false
+---
+
+## Intro
+
+[Join the Translator API origin trial](https://developer.chrome.com/blog/language-detection-origin-trial)というブログを見かけ、Translator APIが使えるようになったことを知りました。
+このAPIは筆者がいずれ自作するかどうかを考えて機能を標準APIとして提供してくれているものだったので、触れてみることにしました。
+
+## 本ブログの特徴
+
+本ブログは、[HonoX](https://github.com/honojs/honox)で作成されています。
+しかしHonoXは特段特殊なことはしていないので、基本的なフロントエンドの知識されあれば、同じように実装できるはずです。
+
+## 実装
+
+大前提として、ブログ記載時点（11/17）において、このAPIはまだオリジントライアル中になるため、トライアルを有効にしていることが前提になります。
+
+githubには、[https://github.com/yossydev/yossy.dev/blob/main/app/islands/ContentWrapper.tsx](https://github.com/yossydev/yossy.dev/blob/main/app/islands/ContentWrapper.tsx)というファイルがメインの実装コードになっています。
+
+### サポートブラウザか否か
+
+Translator API がサポートされているかどうかの確認には、以下のコードで条件分岐を行います。
+
+```tsx
+if ("translation" in self && "createTranslator" in self.translation) {
+```
+
+当ブログでは、サポートブラウザではなかった場合、elseでアラートを出すようにもしています。
+
+```tsx
+if (
+  "translation" in self &&
+  "createTranslator" in (self.translation as any)
+) {
+  // ...実際の処理
+} else {
+  window.alert("The Translator API is not supported");
+}
+```
+
+### 翻訳ツールの作成
+
+サポートブラウザだった場合、次に翻訳をするための設定を行います。本ブログでは以下のように書きました。
+
+```tsx
+const translator = await (self.translation as any).createTranslator({
+  sourceLanguage: "ja",
+  targetLanguage: e.target.value
+});
+```
+
+`sourceLanguage`には現在の言語、`targetLanguage`には翻訳したい言語を入れます。
+これだけで、設定は完了です。
+
+### 翻訳処理の実行
+
+そして最後に実際に翻訳を行います。本ブログでは以下のように書きました。
+
+```tsx
+const res = await translator.translate(content)
+setTranslatedContent(res);
+```
+
+ここには書いていませんが、contentは各ブログの内容がhtml文字列になっています。
+そしてそれを、translatedContentとして、stateに渡してあげます。
+
+あとはstateのvalueをjsxに埋め込むだけで、対象の言語に翻訳されたブログができあがります。
+
+### 課題
+
+技術ブログだと、サンプルコードを埋め込みたい場合があると思います。
+
+参考: [Chrome 130でのCSSネスティング改善: CSSNestedDeclarationsの詳細](https://yossy.dev/posts/css-nesting-improves-with-cssnesteddeclarations)
+```
+↳ CSSStyleRule
+  .type = STYLE_RULE
+  .selectorText = ".foo"
+  .resolvedSelectorText = ".foo"
+  .specificity = (0,1,0)
+  .style (CSSStyleDeclaration, 2) =
+    - width: fit-content
+    - background-color: green
+  .cssRules (CSSRuleList, 1) =
+    ↳ CSSMediaRule
+    .type = MEDIA_RULE
+    .cssRules (CSSRuleList, 1) =
+      ↳ CSSStyleRule
+        .type = STYLE_RULE
+        .selectorText = "&"
+        .resolvedSelectorText = ":is(.foo)"
+        .specificity = (0,1,0)
+        .style (CSSStyleDeclaration, 1) =
+          - background-color: red
+```
+
+これをTranslator APIで翻訳した場合、改行コードが消えてしまうので、画面幅を突き抜けるような画面崩れが発生してしまいます。
+
+## まとめ
+
+筆者としては、とてもインターフェースがシンプルで使い勝手が良さそうなAPIだなと思いました。
+ただその反面、プロダクトにすぐに入れられるかは少し悩ましく、翻訳されるまでかなり早いとはいえ、少し待機時間が発生しそうなのでその見せ方みたいなところは、考える余地がありそうな気はしました。
+
+しかし本ブログくらいの文章量だと2~4秒程度なので、そこまで問題はないかもしれませんが、論文くらいの文章量だとどうなるのか少し気になります。
+
+ただ、楽しみなAPIであることには変わりないので、引き続き進捗が楽しみです。
