@@ -34,7 +34,7 @@ type Props = {
   content: Child;
 };
 
-const TranslatorButton: FC<PropsWithChildren<Props>> = ({
+const ContentWrapper: FC<PropsWithChildren<Props>> = ({
   children,
   content,
 }) => {
@@ -104,4 +104,4 @@ const TranslatorButton: FC<PropsWithChildren<Props>> = ({
   );
 };
 
-export default TranslatorButton;
+export default ContentWrapper;
