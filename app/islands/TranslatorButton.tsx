@@ -55,8 +55,6 @@ const TranslatorButton: FC<Props> = ({ content }) => {
     <>
       <label for="pet-select">translate to: </label>
       <select
-        name="pets"
-        id="pet-select"
         onChange={handleSelectChange}
         value={value}
         class="cursor-pointer"
