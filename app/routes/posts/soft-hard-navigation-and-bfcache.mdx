@@ -1,0 +1,63 @@
+---
+title: "ソフト・ハードナビゲーションについて調べた"
+description: "BFCacheの挙動について調べている際、ソフトナビゲーションとハードナビゲーションというワードを知ったので、メモがてらブログにまとめます"
+date: "2024/12/04"
+updatedAt: "2024/12/04"
+path: "soft-hard-navigation-and-bfcache"
+published: true
+---
+
+## Intro
+
+BFCacheの挙動について調べている際、ソフトナビゲーションとハードナビゲーションというワードを知った（正確には教えてもらった）ので、メモがてらブログにまとめます。
+
+## ソフトナビゲーションとは
+
+仕様書には以下のように記載があります。
+
+> “Soft navigations” are JS-driven same-document navigations that are using the history API or the new Navigation API, triggered by a user gesture and modifies the DOM, modifying the previous content, as well as the URL displayed to the user.
+> ref: https://github.com/WICG/soft-navigations/blob/main/README.md#overview
+
+HistoryやNavigationなどのJavaScript APIを使ってDOM, URLを変更することをソフトナビゲーションと呼ぶそうです。
+
+## ハードナビゲーションとは
+
+先ほどの「ソフト」という言葉と違い、こちらは「ハード」となっています。
+
+その名前の通り、ハードナビゲーションは、ページ全体をロードするナビゲーションのことを指します。
+
+どちらかといえばこちらが従来の画面遷移で、いわゆるMPAで使用されていた画面遷移方法になります。
+
+## ソフトナビゲーションはなぜ生まれたのか
+
+こちらも仕様書から抜粋。
+
+> - Developers would like to attribute various performance entries to specific “soft navigation” URLs. For example, layout shifts caused in one URL can currently be attributed to the corresponding landing page, resulting in mis-attribution and trouble finding the real cause and fixing it.
+> - Developers would like to receive various “load” performance entries for soft navigations. Specifically, paint timing entries seem desired for such navigations.
+
+> From a user's perspective, while they don't necessarily care about the architecture of the site they're visiting, they likely care about it being fast. This specification would enable alignment of the measurements with the user experience, improving the chances of SPA sites being perceived as fast by their users.
+
+> ref: [https://github.com/WICG/soft-navigations/blob/main/README.md#motivation](https://github.com/WICG/soft-navigations/blob/main/README.md#motivation)
+
+メインはパフォーマンスの正確な測定ということがあります。
+そしてこれに対してさらにポイントは二つあり、それが開発者視点とアプリを使用するユーザー視点です。
+
+それぞれ少し考えていきましょう。
+
+### 開発者視点
+
+まずは開発者視点から。
+
+ソフトナビゲーション以前の課題として、**測定したいページと、実際に測定されたページが異なる**という問題が発生していました。
+
+### ユーザー視点
+
+これは開発者がCore Web Vitalsなどの指標をあげやすくなることでデバッグしやすくなり、そうなるとアプリのパフォーマンスが良くなる。
+
+そしてアプリを使用するユーザーは高速であって欲しいはずだから、UXも良くなっているはず。という意見かと思っています。
+
+## ソフトナビゲーションとBFCache
+
+// TODO
+
+https://github.com/WICG/soft-navigations/issues/17#issuecomment-1571595841 ← ここら辺触れておいたら良いかも
