@@ -1,5 +1,5 @@
 ---
-title: "try&catchの課題とproposal-safe-assignment-operator"
+title: "proposal-safe-assignment-operatgorでJSに新しいエラーハンドリングが入るかもしれない"
 description: "proposal-safe-assignment-operatorというプロポーザルがあります（多分まだ提出されていないのでstage0ですらない）。JavaScriptにおけるエラーハンドリングといえば、try&catch / then&catchがあると思います。本プロポーザルのそれらの課題に対しての解決方法が面白かったので紹介します。"
 date: "2024/12/05"
 updatedAt: "2024/12/05"
@@ -7,11 +7,13 @@ path: "proposal-safe-assignment-operator"
 published: true
 ---
 
+[2024年 ユウトの一人アドベントカレンダー](https://adventar.org/calendars/9980)の5日目の記事です。
+
 ## Intro
 
 [proposal-safe-assignment-operator](https://github.com/arthurfiorette/proposal-safe-assignment-operator)というプロポーザルがあります（多分まだ提出されていないのでstage0ですらない）。
 JavaScriptにおけるエラーハンドリングといえば、try&catch / then&catchがあると思います。
-本プロポーザルはそれらについて触れつつ、解決方法が面白かったので紹介します。
+本プロポーザルのそれらの課題に対しての解決方法が面白かったので紹介します。
 
 ## try&catchの課題
 
@@ -60,14 +62,16 @@ async function getData() {
 }
 ```
 
-`?=`という演算子を新しく追加し、タプル型でエラー、レスポンスをそれぞれ受け取るようにします。
-このようにすることで、手続き的なエラーハンドリングが可能になるのと、キャッチ漏れによるアプリケーションのクラッシュも防げるようになります。
+`?=`という演算子を新しく追加し、エラーとレスポンスを配列として返しています。
+そしてerrorでエラー処理の記述が簡潔になり、キャッチ漏れを減らすことでアプリケーションのクラッシュリスクを低減できます。
 
-そしてこれをダウンタイムコンパイルを行うと、以下のようになります。
+本ブログの公開前に少し気になったんですが、errorの時に早期returnするようにしないとdataはnullableになるのか。みたいなのは議論が盛り上がってそうでした。（[https://github.com/arthurfiorette/proposal-safe-assignment-operator/issues/30](https://github.com/arthurfiorette/proposal-safe-assignment-operator/issues/30)）
+
+そしてこの構文は、コンパイラによって次のような形に変換されます。
 
 ```ts
 const [error, data] ?= expression
-
+// ↕︎
 if (error) {
   // catch code
 } else {
