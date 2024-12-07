@@ -1,11 +1,13 @@
 ---
 title: "Chromiumではprefetchを含んでリソースを消費しようとするとキャッシュ制御は5分間無効化される"
 description: "blink-devに、Intent to Ship: removing the five-minute rule for link rel=prefetchというものが流れてきて面白そうだったので少し見ていきました"
-date: "2024/12/10"
-updatedAt: "2024/12/10"
+date: "2024/12/07"
+updatedAt: "2024/12/07"
 path: "prefetch-five-miniute"
 published: true
 ---
+
+[2024年 ユウトの一人アドベントカレンダー](https://adventar.org/calendars/9980)の7日目の記事です。
 
 ## Intro
 
@@ -74,13 +76,13 @@ no-cacheを指定しているにもかかわらず、`from prefetch cache`をキ
 
 ## 今後
 
-実はこの話自体は2022年ごろから話自体は上がっていたようです。（https://chromestatus.com/feature/5087526916718592?context=myfeatures）
+実はこの話自体は2022年ごろから話自体は上がっていたようです。（[https://chromestatus.com/feature/5087526916718592?context=myfeatures](https://chromestatus.com/feature/5087526916718592?context=myfeatures)）
 そしてそこからblink-devで2023年に提案されました。
 
 そして意外とスムーズにLGTMになっているので、すぐ入るのかなと思ったのものの、どうやらバグが出そうみたいな感じになっているようです。
 
 > It turns out this is implemented in a way that impacts both `<link rel=prefetch>` and speculation rules prefetch, and the latter is causing bugs for a large speculation rules prefetch deployment. See this bug for more on the speculation rules case.
-ref: https://groups.google.com/a/chromium.org/g/blink-dev/c/Zdo71C0k9C0/m/NC98nOQZAQAJ
+ref: [https://groups.google.com/a/chromium.org/g/blink-dev/c/Zdo71C0k9C0/m/NC98nOQZAQAJ](https://groups.google.com/a/chromium.org/g/blink-dev/c/Zdo71C0k9C0/m/NC98nOQZAQAJ)
 
 ただ、LGTM自体は出てるから５分ルールを消すように進めていくみたいなことも、同時に書いていますね。
 
