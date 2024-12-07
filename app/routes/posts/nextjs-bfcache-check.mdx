@@ -1,0 +1,83 @@
+---
+title: "Next.jsでBFCacheの挙動をチェックする"
+description: "このブログが公開されている頃には、ブラウザキャッシュやブラウザフォワード、BFCacheについてのことを書いていると思います。その中のBFCacheについて紹介しようとしている際に、簡単にサンプルが用意できるNext.jsを使おうとしたら、自分のイメージ通りの挙動をデフォルトではしてくれなかったのでメモがれたブログに残します。"
+date: "2024/11/26"
+updatedAt: "2024/11/26"
+path: "nextjs-bfcache-check"
+published: true
+---
+
+[2024年 ユウトの一人アドベントカレンダー](https://adventar.org/calendars/9980)の⚫️日目の記事です。
+
+## Intro
+
+このブログが公開されている頃には、ブラウザキャッシュやブラウザフォワード、BFCacheについてのことを書いていると思います。
+その中のBFCacheについて紹介しようとしている際に、簡単にサンプルが用意できるNext.jsを使おうとしたら、自分のイメージ通りの挙動をデフォルトではしてくれなかったのでメモがれたブログに残します。
+
+## サンプル
+
+[https://github.com/yossydev/nextjs-bfcache-playground](https://github.com/yossydev/nextjs-bfcache-playground)というリポジトリを用意しています。
+
+## Content
+
+BFCacheは検証ツールを見れば、なんでキャッシュされなかったのかわかるようになっています。
+そして今回は、以下のようなものが見れました。
+
+<img width="475" alt="image" src="https://github.com/user-attachments/assets/dbfd61aa-493a-4933-9898-d397de542934"/>
+
+- Pages with WebSocket cannot enter back/forward cache.
+- Back/forward cache is disabled because WebSocket has been used.
+- Pages whose main resource has cache-control:no-store cannot enter back/forward cache.
+
+なんとなく、websocketと、cache-control:no-storeが機能していることが問題そうです。
+
+### WebSocket
+
+これは筆者の凡ミスで、`next dev`でローカルサーバーを起動してたことが問題でした。
+
+検証ツールで表示されているファイルに飛んでみると、以下のようなコードに飛びます。
+
+```ts
+function connectHMR(options) {
+    // ...etc
+        source = new window.WebSocket("" + url + options.path); // エラーコード
+}
+```
+
+ファイル名からもなんとなくわかる通り、HMR、つまりホットリロードです。
+`next dev`だとこの機能が使えるので、それがBFCache的にダメだったようです。
+
+なのでこの解決法としては、`next build && next start`をすることで、
+
+> - `Pages with WebSocket cannot enter back/forward cache.`
+> - `Pages whose main resource has cache-control:no-store cannot enter back/forward cache.`
+
+この二つは解消できます。
+
+### cache-control:no-store
+
+二つ目です。これはWebsocketよりも直感的で、なんとなくエラー内容もわかりやすいです。
+
+先ほど貼ったリポジトリを見ていただければわかるかと思いますが、今回筆者は特にキャッシュの設定などしていないです。（`next.config.js`は除く）
+そのため、これはNext.js側で初回から設定しているものになります。
+
+まぁ設定してあるのも納得ではあり、ユーザー情報などキャッシュしちゃダメなものを避けているのかなとも思います。
+Next.jsからすればgetServerSidePropsはただapiとして提供しているだけなので、このapiを使ってどんな処理をSSRするかはわからないはずです。
+ユーザー情報かもしれないし、今回のようなポケモンAPIかもしれない。
+
+そうなってくると、no-storeでapi側は実装しておき、使用者の方でキャッシュしたければキャッシュするようにするのが確かに良いかもしれません。
+
+さて、少し話がそれましたが、逆に言えば、今回のようなユーザー情報にか変わらないような処理はキャッシュしても良さそうです。
+
+今回はだいぶ強引に、next.config.jsに一律キャッシュするように設定しました。
+
+## Result
+
+ここまでで、以下のようにBFCacheが有効になってることがわかります。
+
+<img width="432" alt="image" src="https://github.com/user-attachments/assets/75aee801-d7b4-4781-a645-430f0709fd9a" />
+
+## まとめ
+
+BFCacheが有効になった時、やはり明らかにページの遷移が早くなるのを実感できました。
+あと、BFCacheはなんでキャッシュされなかったのかを検証ツールでわかりやすく教えてくれるのもいいですね。
