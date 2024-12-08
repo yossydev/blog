@@ -6,7 +6,7 @@ interface Heading extends Element {
 }
 
 function rehypeTOC() {
-  return (tree: Root) => {
+  return (tree: Root): void => {
     const headings: Heading[] = [];
     visit(tree, "element", (node: Element) => {
       if (node.tagName === "h2" || node.tagName === "h3") {

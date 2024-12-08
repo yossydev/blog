@@ -6,12 +6,12 @@ import client from "honox/vite/client";
 import rehypeHighlight from "rehype-highlight";
 import remarkFrontmatter from "remark-frontmatter";
 import remarkMdxFrontmatter from "remark-mdx-frontmatter";
-import { defineConfig } from "vite";
+import type { UserConfigExport } from "vite";
 import rehypeTOC from "./app/libs/vite-remark-toc-plugin";
 
 const entry = "./app/server.ts";
 
-export default defineConfig(({ mode }) => {
+const defineConfig = ({ mode }: { mode: string }): UserConfigExport => {
   if (mode === "client") {
     return {
       plugins: [client()],
@@ -38,4 +38,6 @@ export default defineConfig(({ mode }) => {
     ],
     optimizeDeps: {},
   };
-});
+};
+
+export default defineConfig;

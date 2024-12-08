@@ -1,3 +1,4 @@
+import type { MiddlewareHandler } from "hono";
 import { jsxRenderer } from "hono/jsx-renderer";
 import ContentWrapper from "../../islands/ContentWrapper";
 import LikeButton from "../../islands/LikeButton";
@@ -26,4 +27,4 @@ export default jsxRenderer(({ children, Layout, frontmatter }) => {
       <SnsButton title={_title} path={frontmatter?.path ?? ""} />
     </Layout>
   );
-});
+}) satisfies MiddlewareHandler as MiddlewareHandler;

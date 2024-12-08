@@ -1,3 +1,4 @@
+import type { MiddlewareHandler } from "hono";
 import { jsxRenderer } from "hono/jsx-renderer";
 import { Script } from "honox/server";
 import { LINK } from "../constants";
@@ -87,4 +88,4 @@ export default jsxRenderer(({ children, title, description }) => {
       </body>
     </html>
   );
-});
+}) satisfies MiddlewareHandler as MiddlewareHandler;
