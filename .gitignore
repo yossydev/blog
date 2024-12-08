@@ -15,3 +15,6 @@ bun.lockb
 localhost-key.pem
 localhost.pem
 
+## typecheck:perfomance
+trace.json
+types.json
