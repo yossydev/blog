@@ -1,8 +1,9 @@
 import { type FC, Fragment } from "hono/jsx";
+import type { JSX } from "hono/jsx/jsx-runtime";
 import { Heading } from "../components/Heading";
 import { rssClient } from "../libs/rss/rss";
 
-export default function Top() {
+export default function Top(): JSX.Element {
   return (
     <>
       <Heading title="Hi! I'm Yuto" />
