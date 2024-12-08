@@ -9,10 +9,94 @@ published: true
 
 ## Intro
 
-[Isolated Declarations](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-5.html#isolated-declarations)を有効にして、速度を測ってみました。s
+[Isolated Declarations](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-5.html#isolated-declarations)を有効にして、速度を測ってみました。
 
 ## 進め方
 
 `"isolatedDeclarations": true`を設定するだけで良いです。プロジェクトによっては、`--declaration`も有効にする必要があるかもしれません。
 
 あとは大量のエラーと戦うだけです。本ブログに関しては、以下のようなエラー数でした。
+
+```
+Errors  Files
+     1  app/hooks/useDebounce.ts:3
+     1  app/libs/date.ts:7
+     3  app/libs/rss/rss.ts:14
+     1  app/libs/vite-remark-toc-plugin.ts:9
+     1  app/routes/_renderer.tsx:5
+     1  app/routes/all/index.tsx:16
+     1  app/routes/index.tsx:5
+     1  app/routes/posts/_renderer.tsx:6
+     1  app/routes/profile/index.tsx:10
+     1  app/routes/slides/index.tsx:7
+     1  app/routes/youtube/index.tsx:7
+     1  app/server.ts:4
+     1  vite.config.ts:14
+```
+
+ただvscodeは優秀なので、⌘ + .でいい感じに型をつけてくれるので、それにほぼ頼りました。
+実際にはそれなりにちゃんとみたほうがいいと思います。
+
+## 結果
+
+`"typecheck:perfomance": "tsc --generateTrace . --incremental false --noEmit"`ってスクリプトを追加してみました。
+
+ここで生成されるtrace.jsonを、chrome://tracingの右上にあるLoadボタンで読み込ませて確認しています。
+
+### 無効時
+
+1. 804ms
+2. 757ms
+3. 822ms
+4. 791ms
+
+<table>
+    <thead>
+        <tr>
+            <th>
+                <img width="1194" alt="image" src="https://github.com/user-attachments/assets/7fbd920f-5955-4007-9630-11b89ce6c3ac" />
+            </th>
+            <th>
+                <img width="1210" alt="image" src="https://github.com/user-attachments/assets/b7c41e51-9015-497c-b2ea-2f4ad252cfb8" />
+            </th>
+            <th>
+                <img width="1198" alt="image" src="https://github.com/user-attachments/assets/bcc60ef4-100b-46c7-815b-4eb5ec11cb12" />
+            </th>
+            <th>
+                <img width="1200" alt="image" src="https://github.com/user-attachments/assets/6360fb36-bbc4-439c-8751-c0962c1d0acf" />
+            </th>
+        </tr>
+    </thead>
+</table>
+
+### 有効時
+
+1. 865ms
+2. 773ms
+3. 773ms
+4. 787ms
+
+<table>
+    <thead>
+        <tr>
+            <th>
+                <img width="1200" alt="image" src="https://github.com/user-attachments/assets/16976162-56e4-4c82-a5d4-8becfe7c8ca7"/>
+            </th>
+            <th>
+                <img width="1200" alt="image" src="https://github.com/user-attachments/assets/e688d7d1-cf3b-4f7b-a48a-4498545482d3"/>
+            </th>
+            <th>
+                <img width="1198" alt="image" src="https://github.com/user-attachments/assets/beedf772-b673-43c1-ba69-692bee8c457a"/>
+            </th>
+            <th>
+                <img width="1203" alt="image" src="https://github.com/user-attachments/assets/3a119552-8d09-4ae6-8d00-32f46e99ee61"/>
+            </th>
+        </tr>
+    </thead>
+</table>
+
+全然コード量も多くないし、複雑な推論も必要な処理していないので誤差ですね。
+
+## まとめ
+
+Isolated Declarationsを有効化していくOSSや、サービスも多くなっていくと思うので、なんとなく素振りができてよかったです。
