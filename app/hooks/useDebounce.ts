@@ -1,6 +1,6 @@
 import { useEffect, useState } from "hono/jsx";
 
-export function useDebounce(value: number, delay: number) {
+export function useDebounce(value: number, delay: number): number {
   const [debouncedValue, setDebouncedValue] = useState(value);
 
   useEffect(() => {

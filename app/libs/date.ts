@@ -4,7 +4,7 @@ const birthday = {
   date: 24,
 };
 
-export function getAge() {
+export function getAge(): number {
   const today = new Date();
   const thisYearsBirthday = new Date(
     today.getFullYear(),

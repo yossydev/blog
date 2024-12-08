@@ -1,10 +1,11 @@
 import { Fragment } from "hono/jsx";
+import type { JSX } from "hono/jsx/jsx-runtime";
 import { Heading } from "../../components/Heading";
 import { rssClient } from "../../libs/rss/rss";
 
 const FIRST_YOUTUBE_YEAR = 2024;
 
-export default function Youtube() {
+export default function Youtube(): JSX.Element {
   const yearlyBlogs = () => {
     const data = [];
     const thisYear = new Date().getFullYear();
