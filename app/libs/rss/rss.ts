@@ -11,7 +11,12 @@ function formatDate(utcDate: string) {
 }
 
 export const rssClient = {
-  find() {
+  find(): {
+    id: string;
+    title: string;
+    date: string;
+    link: string;
+  }[] {
     return zennRss.map((item) => ({
       id: item.guid,
       title: item.title,
@@ -20,7 +25,12 @@ export const rssClient = {
     }));
   },
 
-  findYoutube() {
+  findYoutube(): {
+    id: string;
+    title: string;
+    date: string;
+    link: string;
+  }[] {
     return youtubeRss.map((item) => ({
       id: item.id,
       title: item.title,
@@ -29,7 +39,12 @@ export const rssClient = {
     }));
   },
 
-  findSpeakerdeck() {
+  findSpeakerdeck(): {
+    id: string;
+    title: string;
+    date: string;
+    link: string;
+  }[] {
     return speakerdeckRss.map((item) => ({
       id: item.guid,
       title: item.title,

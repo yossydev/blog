@@ -1,6 +1,6 @@
 import {} from "hono";
 
-type Head = {
+export type Head = {
   title?: string;
   description?: string;
   date?: string;
