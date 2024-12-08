@@ -3,8 +3,16 @@ title: "yossy.devでisolatedDeclationを有効にした"
 description: "a"
 date: "2024/12/15"
 updatedAt: "2024/12/15"
-path: "feat/isolated-declarations"
+path: "isolated-declarations"
 published: true
 ---
 
 ## Intro
+
+[Isolated Declarations](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-5.html#isolated-declarations)を有効にして、速度を測ってみました。s
+
+## 進め方
+
+`"isolatedDeclarations": true`を設定するだけで良いです。プロジェクトによっては、`--declaration`も有効にする必要があるかもしれません。
+
+あとは大量のエラーと戦うだけです。本ブログに関しては、以下のようなエラー数でした。
