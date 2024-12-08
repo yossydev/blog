@@ -12,6 +12,7 @@
     "check": "biome check --apply .",
     "check:ci": "biome ci .",
     "typecheck": "tsc -p . --noEmit",
+    "typecheck:perfomance": "tsc --generateTrace . --incremental false --noEmit",
     "create:post": "node ./app/libs/posts/generate-post.mjs",
     "update-rss": "node ./app/libs/posts/rss-parser.mjs"
   },
