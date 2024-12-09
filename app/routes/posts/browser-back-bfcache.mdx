@@ -1,0 +1,66 @@
+---
+title: "ブラウザの戻る・進むを高速化するBFCache"
+description: "ブラウザの戻る、進むボタン押したときにページが一瞬で復元される体験にあったことはないでしょうか。実はこれを可能にしている機能が、 BFCache（Back/Forward Cache） です。本記事では、BFCacheの概要とその背景について調べた内容を、調査メモとして共有します。次回以降、具体的な実装例やデバッグ方法についても掘り下げていく予定です。"
+date: "2024/12/09"
+updatedAt: "2024/12/09"
+path: "browser-back-bfcache"
+published: true
+---
+
+[2024年 ユウトの一人アドベントカレンダー](https://adventar.org/calendars/9980)の9日目の記事です。
+
+## Intro
+
+ブラウザの戻る、進むボタン押したときにページが一瞬で復元される体験にあったことはないでしょうか。
+実はこれを可能にしている機能が、 BFCache（Back/Forward Cache） です。
+
+本記事では、BFCacheの概要とその背景について調べた内容を、調査メモとして残しておきます
+
+## BFCacheとは
+
+正式名称は、バックフォワード キャッシュです。
+名前の通りで、ブラウザバック・ブラウザフォワードをキャッシュを使って高速化するための機能になります。
+
+BFCacheがない場合、ページを移動するたびにページを表示するための通信をしなければならないです。
+
+その通信を減らせるのがBFCacheです。詳しい挙動や実際のコードでどう表現するかは、次回紹介します。
+
+## なぜ実装されたのか
+
+blink-devに投稿された内容的としては、以下のように書いてありました。
+
+> Bfcache (back/forward) cache is a feature to cache pages in-memory (preserving javascript state and the DOM state) when the user navigates away from them. This makes navigating back to previously visited pages (19% of all navigations for mobile Chrome) extremely fast.
+> ref: https://docs.google.com/document/d/1mrgp7XzR16rd1xqFYOJgC1IP0NPLZFaRU5Ukj3-TlLw/edit?tab=t.0
+
+キャッシュ機能なので当然と言えば当然ですが、パフォーマンスの向上を目的として実装されているようです。
+
+## なぜ2023に実装されたのか
+
+[バックフォワード キャッシュ](https://web.dev/articles/bfcache?hl=ja)というブログは、2023年に公開されたようです。
+筆者としては、もっと早くからあってもいいのでは？とも思ってしまうほど強力な機能だなと思います。なぜ2023年になったのでしょうか？？
+
+### 提案は2019年
+
+[Intent to Implement: back-forward cache](https://groups.google.com/a/chromium.org/g/blink-dev/c/OVROmzNUng0/m/1gTmi-I3EQAJ)は、2019年に提案されています。
+そしてコメントに、面白いものもあります。
+
+>  It was a feature we had in Presto (and in early versions of Chromium based Operas but we dropped it to focus on other things) and I have missed it.
+> https://groups.google.com/a/chromium.org/g/blink-dev/c/OVROmzNUng0/m/JR8iuQRDEQAJ
+
+どうやらこの機能自体は昔からあったようです。しかしChromiumには（おそらく）入れようとしてやめていそうです。
+
+### Back-forward cache meta-bug
+
+[Back-forward cache meta-bug](https://github.com/whatwg/html/issues/5880)というissueを見つけた。
+このissue自体は2020年に作られているようですが、2023年ごろでも関連issueが作られているので、相当議論が長引いたことがわかります。
+
+さらに紐づけられているissueの中身を見てみても、かなり話していますね。
+
+## まとめ
+
+- BFCacheの目的：ブラウザの戻る・進む操作を高速化し、再通信を回避する。
+- 実装背景：2019年に提案され、課題解決までに数年を要した。
+- 実装が遅れた理由：メモリ管理やセキュリティ、互換性の問題が障壁となった。
+- 開発者への影響：キャッシュを阻害しないコード設計やデバッグが求められる。
+
+もっとちゃんと調べようとしたんですが、アドカレ期間中なのでこれくらいで🙏
