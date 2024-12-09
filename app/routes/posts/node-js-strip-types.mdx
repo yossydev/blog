@@ -1,0 +1,42 @@
+---
+title: "JavaScriptランタイムの歴史からみるNode.js strip-typeが入るまで"
+description: "a"
+date: "2024/12/09"
+updatedAt: "2024/12/09"
+path: "node-js-strip-types"
+published: true
+---
+
+## Intro
+
+Node.jsでTypeScriptが動こうとしている。
+筆者がプログラミングを始めた頃にはもうTypeScriptが当たり前で、当然の世界だと思っていた。
+しかしNode.jsでは動かなかった。
+
+## TypeScriptを使った開発が当たり前に
+
+- フロントエンドでもバックエンドでもJavaScriptを使うならTypeScriptになった
+- React/Next.jsアプリケーションを作る際に、TypeScriptのコンパイルに対してそこまで強く意識しなくても良い
+- これはトランスパイルやバンドルステップも入るから
+
+## Denoの誕生
+
+- 初代ランタイムTypeScriptサポート
+- 内部では〇〇で動いている
+- ライアンダールの反省から見てもTypeScriptのサポートは当然だった
+
+## Bunの登場
+
+- （多分）2代目ランタイムTSサポート
+- 内部では〇〇で動いている
+- 個人的には暴走列車として暴れ回っているのを見ている分には面白いので好き。
+
+## Node.js strip-typeの誕生
+
+- https://nodejs.org/docs/v22.12.0/api/typescript.html#type-stripping
+- きっと全人類が待ち侘びた機能（？）
+
+## ブラウザのTSサポート
+
+- https://www.reddit.com/r/webdev/comments/xecvqe/browsers_should_support_typescript_natively/
+- https://stackoverflow.com/questions/22885955/typescript-support-in-modern-browsers
