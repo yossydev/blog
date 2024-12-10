@@ -1,0 +1,86 @@
+---
+title: "BFCacheの動作確認とテスト方法"
+description: "今回は、BFCache（Back/Forward Cache）の動作をどのように確認できるか、具体的なチェック方法を紹介します。BFCacheはブラウザが自動的に処理してくれる機能です。しかし、ページがBFCacheに保存されているか、またBFCacheから復元されているかを確認したい場合があります。この記事では、ブラウザAPIやDevToolsを活用して、BFCacheの動作確認を行う手順を見ていきます。"
+date: "2024/12/10"
+updatedAt: "2024/12/10"
+path: "bfcache-check"
+published: true
+---
+
+[2024年 ユウトの一人アドベントカレンダー](https://adventar.org/calendars/9980)の10日目の記事です。
+
+## Intro
+
+今回は、BFCache（Back/Forward Cache）の動作をどのように確認できるか、具体的なチェック方法を紹介します。
+
+BFCacheはブラウザが自動的に処理してくれる機能です。しかし、ページがBFCacheに保存されているか、またBFCacheから復元されているかを確認したい場合があります。
+
+この記事では、ブラウザAPIやDevToolsを活用して、BFCacheの動作確認を行う手順を見ていきます。
+
+## サンプル
+
+[https://github.com/yossydev/bfcache-playground](https://github.com/yossydev/bfcache-playground)
+
+## pageshow/pagehide
+
+bfcacheのモニタリングとして、二つのAPIを使用することができます。
+それが、`pageshow`と`pagehide`です。
+
+### ページが`bfcache`から復元された
+
+まずpageshowです。コードは以下のように書けます。
+
+```js
+window.addEventListener("pageshow", (event) => {
+	if (event.persisted) {
+		console.log("bfcacheによって復元されました");
+	} else {
+		console.log("通常のページロード");
+	}
+});
+```
+
+`pageshow`というイベントをリッスンしています。
+このイベントは、ページ読み込みのloadイベントの直後と、ページが`bfcache`から復元されるたびに発火します。
+
+そして「ページが`bfcache`から復元された」ということの判定には、`event.persisted`を使用します。これがtrueの時は、bfcacheから復元されたということです。
+
+### ページを`bfcache`に追加した
+
+次にpagehideイベントです。コードは以下のように書けます。
+
+```js
+window.addEventListener("pagehide", (event) => {
+	if (event.persisted) {
+		console.log("bfcacheに追加されました");
+	} else {
+		console.log("キャッシュされませんでした");
+	}
+});
+```
+
+pagehideというイベントをリッスンしています。
+このイベントは、ページがアンロードされたとき、もしくは、ページを`bfcache`に保存しようとしたときに発火します。
+
+このイベントも`pageshow`と同様、persistedを使用します。
+trueになるときは、「bfcacheに追加された」ということがわかるようになっています。
+
+## bfcacheに追加できているかのテスト
+
+DevToolを活用してテストできます。
+
+DevTool →　Applicationタブ →  Back/forward cacheでチェックできます。
+
+<img src='https://github.com/user-attachments/assets/e73f9030-6c20-4427-a8f6-513d3d10c79d' width='500'/>
+
+そしてここまで来た状態で適当なページに遷移し、ブラウザバックしてみましょう。
+ブラウザバック前のページでは、以下のようになっているかと思います。
+
+<img src='https://github.com/user-attachments/assets/837bab20-a55d-46e0-87eb-666d14f8c89f' width='500'/>
+
+そしてブラウザバック後、bfcacheへの追加が成功していると以下のようになります。
+<img src='https://github.com/user-attachments/assets/220b3d17-5f8d-4bc8-b061-fd268e489693' width='500'/>
+
+## まとめ
+
+普段自分が関わっているアプリケーションでも、BFCacheが効いているか、効いなければなんでそうなっているのかを、ぜひ見てみるのも面白いのではないでしょうか。
