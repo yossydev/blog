@@ -1,19 +1,21 @@
 ---
-title: "BFCacheのチェック"
-description: "a"
-date: "2024/11/26"
-updatedAt: "2024/11/26"
-path: "{{filename}}"
+title: "BFCacheの動作確認とテスト方法"
+description: "今回は、BFCache（Back/Forward Cache）の動作をどのように確認できるか、具体的なチェック方法を紹介します。BFCacheはブラウザが自動的に処理してくれる機能です。しかし、ページがBFCacheに保存されているか、またBFCacheから復元されているかを確認したい場合があります。この記事では、ブラウザAPIやDevToolsを活用して、BFCacheの動作確認を行う手順を見ていきます。"
+date: "2024/12/10"
+updatedAt: "2024/12/10"
+path: "bfcache-check"
 published: true
 ---
 
+[2024年 ユウトの一人アドベントカレンダー](https://adventar.org/calendars/9980)の10日目の記事です。
+
 ## Intro
 
-今回はBFCacheを実際にコードベースでどう扱うのかを見ていきたいと思います。
+今回は、BFCache（Back/Forward Cache）の動作をどのように確認できるか、具体的なチェック方法を紹介します。
 
-そもそも前提として、BFCacheは、ブラウザが自動で行ってくれる機能です。
+BFCacheはブラウザが自動的に処理してくれる機能です。しかし、ページがBFCacheに保存されているか、またBFCacheから復元されているかを確認したい場合があります。
 
-そのため、ここで紹介するのはBFCacheの扱い方ではなく、BFCacheによってページの最適化、効果の測定などを行う方法です。
+この記事では、ブラウザAPIやDevToolsを活用して、BFCacheの動作確認を行う手順を見ていきます。
 
 ## サンプル
 
