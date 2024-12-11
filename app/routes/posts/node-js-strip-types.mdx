@@ -1,5 +1,5 @@
 ---
-title: "JavaScriptランタイムの歴史からみるNode.js strip-typeが入るまで"
+title: "Node.jsでTypeScriptファイルが実行できるようになるまで"
 description: "a"
 date: "2024/12/18"
 updatedAt: "2024/12/18"
@@ -17,8 +17,8 @@ Node.jsの[--experimental-strip-types](https://nodejs.org/docs/v22.12.0/api/cli.
 
 ## 前提
 
-- JavaScriptは素晴らしい言語
-- 筆者は、できればTypeScriptを使わずJavaScriptを生で書きたいと思っている人
+- 何かを批判したいわけではないです。
+- JavaScriptも素晴らしいです。むしろ筆者はJSのまま書けるなら書きたいです。
 
 ## TypeScriptを使った開発が当たり前に
 
@@ -63,18 +63,44 @@ $ deno main.ts
 Hello, world!
 ```
 
+--checkをつければtscを使い、ないときはswcを使ってトランスパイルを行っているようです。
+
+いわゆる、元祖TypeScriptランタイムと言えるほど、DenoがTypeScriptのサポートを牽引したといえます。
+
 ## Bunの登場
 
-- （多分）2代目ランタイムTSサポート
-- 内部では〇〇で動いている
-- 個人的には暴走列車として暴れ回っているのを見ている分には面白いので好き。
+2代目かどうかはわかりませんが、同じくTypeScriptランタイムのBunです。
+色々言われていますが、筆者としてはこういう進み方もいいんじゃないかなと思っています。採用するかはわかりませんが。
+
+BunもDenoと同じく、TypeScriptファイルを実行できます。
+ただ、Denoと違うのはtscを内部で持っていないので、もし型のチェックが必要な場合は自分で追加する必要があります。
+トランスパイルはしてくれるそうです。（なんかパッと見た感じ[Transpiler](https://bun.sh/docs/api/transpiler)ってAPIがやってそう...？？）
 
 ## Node.js strip-typeの誕生
 
-- https://nodejs.org/docs/v22.12.0/api/typescript.html#type-stripping
-- きっと全人類が待ち侘びた機能（？）
+結構ざっくりですが、これまで存在したTypeScriptランタイムについてみていきました。
+大事なのは、それらは後発のランタイムで、Node.jsをもとに、改善点を見つけ生まれたのでが彼らであるといえます。
 
-## ブラウザのTSサポート
+Node.jsはここ最近、かなり積極的に新機能を入れている印象で、特に2024年度は、require ESMとTypeScript Supportがやはり熱かったと思います。
+他にもbuilt-in系が進化したような印象もあります。
 
-- https://www.reddit.com/r/webdev/comments/xecvqe/browsers_should_support_typescript_natively/
-- https://stackoverflow.com/questions/22885955/typescript-support-in-modern-browsers
+この二つが入ったのが特徴的で、DenoもBunも、モジュールのサポートはESModulesになっています。
+
+圧倒的既存ユーザーを持ったNode.jsが、後発組の良さも取り入れて更なる進化をしているのはとても良いことに感じます。
+
+## 健全なランタイムの争い
+
+- Node.jsの反省から生まれたDeno
+- 速度を追求し、独自の発展を続けるBun
+- 後発組から影響を受け更なる進化を続けるNode.js
+
+今のJavaScriptランタイムは、これらがいい具合に作用して、成長しあっていってるのではないでしょうか。
+Node.jsが本格的にTypeScriptサポートが入った時にどうなるDenoみたいな話もあると思いますが、そうやっていいものを取り入れて、成長していって欲しいです。
+Bunは引き続き筆者は見守ります。
+
+## 関連・参考
+
+- https://deno-ja.vercel.app/manual@v1.9.1/typescript/overview
+- https://deno.com/blog/v1.24#type-checking-and-emitting-performance-improvements
+- https://deno-ja.vercel.app/manual@v1.9.1/typescript/overview
+- https://github.com/denoland/deno/pull/3442
