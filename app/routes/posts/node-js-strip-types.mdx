@@ -15,17 +15,53 @@ Node.jsの[--experimental-strip-types](https://nodejs.org/docs/v22.12.0/api/cli.
 本記事では、おそらくブラウザを除いたJavaScriptランタイムの中では、もっとも使われているNode.jsが、今回のサポートを行うまで、今後の動き、
 そして最も主要な、ブラウザというランタイムでTypeScriptファイルが実行できることはあるのか。ということについて考えていきたいと思います。
 
+## 前提
+
+- JavaScriptは素晴らしい言語
+- 筆者は、できればTypeScriptを使わずJavaScriptを生で書きたいと思っている人
+
 ## TypeScriptを使った開発が当たり前に
 
-- フロントエンドでもバックエンドでもJavaScriptを使うならTypeScriptになった
-- React/Next.jsアプリケーションを作る際に、TypeScriptのコンパイルに対してそこまで強く意識しなくても良い
-- これはトランスパイルやバンドルステップも入るから
+現代の開発において、フロントエンドでもバックエンドでも、JavaScriptを生で書かず、TypeScriptで書かれることが多くなりました。
+JavaScriptで書かれたNode.jsサーバー、大量のコンポーネントが存在するのにpropsに一切の保管が効かない（props-typesは除く）Reactアプリなど、考えるのも怖いと思います。
+
+さらに、ReactやNext.js、Vue.jsやNuxt.jsといったフレームワークたちによって、コンパイルするためにtsconfigを細かく制御したりせずとも、アプリケーションの開発はできるようになってきました。
+
+このおかげで、確実にアプリケーション開発はしやすくなっていると思っています。
+
+しかし、TypeScriptはそのままでは動きません。必ず最終的にはJavaScriptにコンパイルされます。
+なので初期の頃は、tscで自分でコンパイルして、そこで出力されたJavaScriptファイル・ディレクトリをentry pointとし、アプリケーションを動かす、みたいなことをする必要がありました。
+
+けどもうそれは過去の話になろうとしています。というかもうなっています。
+
+ここからは、Node.jsの強豪のなるDeno, Bunを見ていきつつ、最後にNode.jsの動きも見ていきます。
 
 ## Denoの誕生
 
-- 初代ランタイムTypeScriptサポート
-- 内部では〇〇で動いている
-- ライアンダールの反省から見てもTypeScriptのサポートは当然だった
+[https://deno.com/](https://deno.com/)
+
+Node.jsの生みの親、ライアンダールが作ったのがDenoです。
+ちなみにDenoはNodeの単語をもじっています。そしてこれは、TypeScriptランタイムだと書いてあります。
+
+これは[Design Mistakes in Node](https://tinyclouds.org/jsconf2018.pdf)という有名な反省文があると思いますが、こちらを解消しつつ、生まれたものになってます。
+ただ2024年Denoバージョンの反省文もそういえば出ていたような気がしますが。
+
+TypeScriptランタイムだと言っているように、DenoではTypeScriptファイルがそのまま動きます。
+以下は[公式ドキュメント](https://docs.deno.com/runtime/)のものです。
+
+```ts
+// main.ts
+function greet(name: string): string {
+  return `Hello, ${name}!`;
+}
+
+console.log(greet("world"));
+```
+
+```
+$ deno main.ts
+Hello, world!
+```
 
 ## Bunの登場
 
