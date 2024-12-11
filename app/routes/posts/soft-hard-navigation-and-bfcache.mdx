@@ -1,0 +1,140 @@
+---
+title: "ソフトナビゲーションの仕組みと使い方"
+description: "BFCacheの挙動について調べている際、ソフトナビゲーションとハードナビゲーションというワードを知ったので、メモがてらブログにまとめます"
+date: "2024/12/11"
+updatedAt: "2024/12/11"
+path: "soft-hard-navigation-and-bfcache"
+published: true
+---
+
+[2024年 ユウトの一人アドベントカレンダー](https://adventar.org/calendars/9980)の11日目の記事です。
+
+## Intro
+
+BFCacheの挙動について調べている際、ソフトナビゲーションとハードナビゲーションというワードを知った（正確には教えてもらった）ので、メモがてらブログにまとめます。
+
+## ソフトナビゲーションとは
+
+仕様書には以下のように記載があります。
+
+> “Soft navigations” are JS-driven same-document navigations that are using the history API or the new Navigation API, triggered by a user gesture and modifies the DOM, modifying the previous content, as well as the URL displayed to the user.
+> ref: https://github.com/WICG/soft-navigations/blob/main/README.md#overview
+
+HistoryやNavigation、history.pushStateやnavigation.navigateなどのJavaScript APIを使ってDOM, URLを変更することをソフトナビゲーションと呼ぶそうです。
+
+## ハードナビゲーションとは
+
+先ほどの「ソフト」という言葉と違い、こちらは「ハード」となっています。
+
+その名前の通り、ハードナビゲーションは、ページ全体をロードするナビゲーションのことを指します。なのでaタグや、`window.location.reload`などがこちらに該当します。
+
+どちらかといえばこちらが従来の画面遷移で、いわゆるMPAで使用されていた画面遷移方法になります。
+
+## ソフトナビゲーションはなぜ生まれたのか
+
+こちらも仕様書から抜粋。
+
+> - Developers would like to attribute various performance entries to specific “soft navigation” URLs. For example, layout shifts caused in one URL can currently be attributed to the corresponding landing page, resulting in mis-attribution and trouble finding the real cause and fixing it.
+> - Developers would like to receive various “load” performance entries for soft navigations. Specifically, paint timing entries seem desired for such navigations.
+
+> From a user's perspective, while they don't necessarily care about the architecture of the site they're visiting, they likely care about it being fast. This specification would enable alignment of the measurements with the user experience, improving the chances of SPA sites being perceived as fast by their users.
+
+> ref: [https://github.com/WICG/soft-navigations/blob/main/README.md#motivation](https://github.com/WICG/soft-navigations/blob/main/README.md#motivation)
+
+メインはパフォーマンスの正確な測定ということがあります。
+そしてこれに対してさらにポイントは二つあり、それが開発者視点とアプリを使用するユーザー視点です。
+
+それぞれ少しみていきましょう。
+
+### 開発者視点
+
+ソフトナビゲーションが生まれる前の課題として、**測定したいページと、実際に測定されたページが異なる**という問題が発生していました。
+
+つまりどういうことか、これは[Fire Paint Timing events for soft navigations](https://github.com/w3c/performance-timeline/issues/168)というissueのコメントに、以下のように記載があります。
+
+> This is especially noticeable on something like CLS:
+User lands on example.com/foo
+The observers are initialised and data collected
+User clicks to example.com/foo/bar
+The observers are still running from example.com/foo, and also the new 'page' example.com/foo/bar
+> 
+> ref: [https://github.com/w3c/performance-timeline/issues/168#issue-640604757](https://github.com/w3c/performance-timeline/issues/168#issue-64060475)
+
+fooというパスから、foo/barに読み込みが終わる前に遷移すると、CLSの結果がfoo + foo/barの結果になってしまう。というバグですね。
+
+Core Web Vitalsを元にしたWebのパフォーマンス改善をしたことがある方であれば、共感できる内容ではないでしょうか。
+筆者も確かに同じような経験をしたことがあった気がしたのですが、その環境を用意しようとしましたところなかなかうまくできなかったのでそちらは断念しました。
+
+### ユーザー視点
+
+これは開発者がCore Web Vitalsなどの指標をあげやすくなることでデバッグしやすくなり、そうなるとアプリのパフォーマンスが良くなる。
+
+そしてアプリを使用するユーザーは高速であって欲しいはずだから、UXも良くなっているはず。という意見かと思っています。
+
+## ソフトナビゲーションを使ってみる
+
+なんとなくソフトナビゲーションについて理解できたところで、実際に触ってみましょう。
+
+まず、この機能はデフォルトで有効になっていないので、有効化する必要があります。
+
+ブラウザで、[chrome://flags/#enable-experimental-web-platform-features](chrome://flags/#enable-experimental-web-platform-features)にアクセスして、disbaleからenableに変更しましょう。
+あとこれはChromiumでしかまだ試せません。
+
+有効にできたら実際にAPIレベルで触ってみます。
+
+以下のようなコードを実行してみます。筆者はReactで試しているので、このコードをそのままuseEffect内で実行します。
+
+```js
+new PerformanceObserver((entryList) => {
+    for (const entry of entryList.getEntries()) {
+    const softNavEntry =
+        performance.getEntriesByType('soft-navigation').filter(
+        (navEntry) => navEntry.navigationId === entry.navigationId
+        )[0];
+    console.log("softNavEntry", softNavEntry);
+
+    const hardNavEntry = performance.getEntriesByType('navigation')[0];
+    const navEntry = softNavEntry || hardNavEntry;
+    const startTime = navEntry?.startTime;
+    console.log('LCP time:', entry.startTime - startTime);
+    }
+}).observe({ type: 'largest-contentful-paint', buffered: true, includeSoftNavigationObservations: true });
+```
+ポイントは`includeSoftNavigationObservations: true`で、このオプションをつけることで、ソフトナビゲーションでパフォーマンスの監視を行ってくれるようになります。
+
+そしてフラグの有効化と、先ほどのコードを実行すると、以下のような結果になるかと思います
+
+<table>
+    <thead>
+        <tr>
+            <th>Flag OFF</th>
+            <th>Flag ON</th>
+        </tr>
+        <tr>
+            <th>
+                <img width="200" alt="image" src="https://github.com/user-attachments/assets/bd645e07-a1af-48a2-b9c0-af27421b7ad6"/>
+            </th>
+            <th>
+                <img width="520" alt="image" src="https://github.com/user-attachments/assets/b69a544e-a241-4b78-ae09-ae509c4027b0"/>
+            </th>
+        </tr>
+    </thead>
+</table>
+  
+`console.log("softNavEntry", softNavEntry);`としているところでログが出ています。なのでちゃんと動いてそうです。
+
+当初の話に戻ると、このソフトナビゲーションがあることで、今までロード中に画面遷移した場合にそのまま結果が引き継がれてCLSなどの値がページを跨いだ合算になってしまっていたのに対し、
+これはソフトナビゲーションが発生するたびにオブザーバーを初期化してくれるので、正しい数値の計測が可能になった。ということです。
+
+## まとめ
+
+軽い気持ちで調べ始めたナビゲーション系ですが、相当奥が深く、とても学びがありました。
+今回書いたブログの内容はほんの一部なので、ぜひ以下に貼ったリンクから、より詳しい内容を追ってみてください。
+
+## 参考・関連
+
+- [https://github.com/WICG/soft-navigations](https://github.com/WICG/soft-navigations)
+- [https://talkeh.com/lander/surachipm.com/index.php?hl=ja&_=%2Fdocs%2Fweb-platform%2Fsoft-navigations-experiment%23avVel1cMipmoS7scGREAGpFUyoGfKzElSClBkA%3D%3D](https://talkeh.com/lander/surachipm.com/index.php?hl=ja&_=%2Fdocs%2Fweb-platform%2Fsoft-navigations-experiment%23avVel1cMipmoS7scGREAGpFUyoGfKzElSClBkA%3D%3D)
+- [https://wicg.github.io/soft-navigations/#sec-intro](https://wicg.github.io/soft-navigations/#sec-intro)
+- [Navigation API による「JS での画面遷移」と SPA の改善 | blog.jxck.io](https://blog.jxck.io/entries/2022-04-22/navigation-api.html)
+- [Web サイトのパフォーマンスを計測するためのタイミング関係の API について](https://blog.bokken.io/articles/2023-04-30/timing-related-apis.html)
