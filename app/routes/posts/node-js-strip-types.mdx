@@ -1,17 +1,19 @@
 ---
 title: "JavaScriptランタイムの歴史からみるNode.js strip-typeが入るまで"
 description: "a"
-date: "2024/12/09"
-updatedAt: "2024/12/09"
+date: "2024/12/18"
+updatedAt: "2024/12/18"
 path: "node-js-strip-types"
 published: true
 ---
 
 ## Intro
 
-Node.jsでTypeScriptが動こうとしている。
-筆者がプログラミングを始めた頃にはもうTypeScriptが当たり前で、当然の世界だと思っていた。
-しかしNode.jsでは動かなかった。
+Node.jsの[--experimental-strip-types](https://nodejs.org/docs/v22.12.0/api/cli.html#--experimental-strip-types)というフラグについてご存知でしょうか。
+このフラグを有効にすることで、Node.jsでTypeScriptファイルが実行できるようになります。
+
+本記事では、おそらくブラウザを除いたJavaScriptランタイムの中では、もっとも使われているNode.jsが、今回のサポートを行うまで、今後の動き、
+そして最も主要な、ブラウザというランタイムでTypeScriptファイルが実行できることはあるのか。ということについて考えていきたいと思います。
 
 ## TypeScriptを使った開発が当たり前に
 
