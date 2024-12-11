@@ -1,13 +1,13 @@
 ---
-title: "ソフト・ハードナビゲーションについて調べた"
+title: "ソフトナビゲーションの仕組みと使い方"
 description: "BFCacheの挙動について調べている際、ソフトナビゲーションとハードナビゲーションというワードを知ったので、メモがてらブログにまとめます"
-date: "2024/12/12"
-updatedAt: "2024/12/12"
+date: "2024/12/11"
+updatedAt: "2024/12/11"
 path: "soft-hard-navigation-and-bfcache"
 published: true
 ---
 
-[2024年 ユウトの一人アドベントカレンダー](https://adventar.org/calendars/9980)の⚫️日目の記事です。
+[2024年 ユウトの一人アドベントカレンダー](https://adventar.org/calendars/9980)の11日目の記事です。
 
 ## Intro
 
@@ -63,7 +63,7 @@ The observers are still running from example.com/foo, and also the new 'page' ex
 fooというパスから、foo/barに読み込みが終わる前に遷移すると、CLSの結果がfoo + foo/barの結果になってしまう。というバグですね。
 
 Core Web Vitalsを元にしたWebのパフォーマンス改善をしたことがある方であれば、共感できる内容ではないでしょうか。
-筆者も確かに同じような経験をしたことがあった気がして、その環境を用意しようとしましたがなかなかうまくできなかったのでそちらは断念しました。
+筆者も確かに同じような経験をしたことがあった気がしたのですが、その環境を用意しようとしましたところなかなかうまくできなかったのでそちらは断念しました。
 
 ### ユーザー視点
 
