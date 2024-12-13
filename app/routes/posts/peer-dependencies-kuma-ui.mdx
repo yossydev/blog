@@ -1,0 +1,128 @@
+---
+title: "kuma-uiの@types/reactで知ったpeerDependenciesの抜け道、そしてpnpmとnpmの挙動の違い"
+description: "最近興味本位でkuma-uiのコードを読んで、動かしてみたりしています。最近React19も出たので、ちゃんと動くのかなと思って環境構築してたらいくつか出くわしたエラーの一つです。"
+date: "2024/12/13"
+updatedAt: "2024/12/13"
+path: "peer-dependencies-kuma-ui"
+published: true
+---
+
+[2024年 ユウトの一人アドベントカレンダー](https://adventar.org/calendars/9980)の13日目の記事です。
+
+## Intro
+
+最近興味本位でkuma-uiのコードを読んで、動かしてみたりしています。
+最近React19も出たので、ちゃんと動くのかなと思って環境構築してたらいくつか出くわしたエラーの一つです。
+
+## kuma-uiのcoreパッケージをnpmでinstallする時に気をつけること
+
+`kuma-ui/core`の`@types/react`は、peerDependenciesで`^18.0.32`に固定されています。
+
+```json
+"peerDependencies": {
+    "@types/react": "^18.0.32", // ← here
+    "next": ">=13.4.5",
+    "react": ">=18.2.0"
+},
+```
+
+なので`npm create vite@latest`とかせずlockファイルが存在しない状態でnpm使ってinstallをしようとすると、以下のようなエラーになります。
+
+```
+❯ npm install @kuma-ui/core
+
+
+npm error code ERESOLVE
+npm error ERESOLVE could not resolve
+npm error
+npm error While resolving: @kuma-ui/core@1.5.8
+npm error Found: @types/react@19.0.1
+npm error node_modules/@types/react
+npm error   @types/react@"*" from @types/react-dom@19.0.1
+npm error   node_modules/@types/react-dom
+npm error     dev @types/react-dom@"^19.0.0" from the root project
+npm error   dev @types/react@"^19.0.0" from the root project
+npm error
+npm error Could not resolve dependency:
+npm error peerOptional @types/react@"^18.0.32" from @kuma-ui/core@1.5.8
+npm error node_modules/@kuma-ui/core
+npm error   @kuma-ui/core@"^1.5.8" from the root project
+npm error
+npm error Conflicting peer dependency: @types/react@18.3.14
+npm error node_modules/@types/react
+npm error   peerOptional @types/react@"^18.0.32" from @kuma-ui/core@1.5.8
+npm error   node_modules/@kuma-ui/core
+npm error     @kuma-ui/core@"^1.5.8" from the root project
+npm error
+npm error Fix the upstream dependency conflict, or retry
+npm error this command with --force or --legacy-peer-deps
+npm error to accept an incorrect (and potentially broken) dependency resolution.
+...etc
+```
+
+よく見るやつですね。筆者としては、nextと、特にreactが18.2.0以上で指定されているのでここも同じようにした方がいいのではと思いました。
+
+ただ、その下で`peerDependenciesMeta`が`optional: true`に指定されていました。
+
+```json
+"peerDependenciesMeta": {
+    "@types/react": {
+        "optional": true
+    },
+    "next": {
+        "optional": true
+    }
+},
+```
+
+筆者はこの存在を全然知らず、調べて初めて知ったんですが、どうやら以下のように書くことで、パッケージの使用者側で上書きできるようです。
+
+```json
+"overrides": {
+    "@types/react": "^19.0.0"
+}
+```
+
+このようにすることで、install自体は可能です。
+
+## pnpmでは？
+
+先ほどはnpmを使用してinstallした場合の話でした。実は今の件、pnpmを使うと全てエラーとか貫通して使うことができます。
+
+例えばわかりやすいのが、`@kuma-ui/vite-plugin`というviteでkuma-uiを使うためのプラグインがあります。
+viteといえば、最近v6が出たと思いますが、kuma-uiのpeerDependenciesを見るとv4とv5しか指定されていませんでした。
+
+```
+"peerDependencies": {
+    "vite": "^4 || ^5"
+},
+```
+
+これはpeerDependenciesMetaにも指定されていないので、npmだと問答無用でエラーになります。
+
+しかしpnpmだと、warnになるだけでinstallできます。（npmも`this command with --force or --legacy-peer-deps`とある通り、オプションを追加すればinstallできますが）
+
+```
+❯ pnpm install -D @kuma-ui/vite
+
+Packages: +18
+++++++++++++++++++
+Progress: resolved 263, reused 198, downloaded 3, added 18, done
+node_modules/.pnpm/esbuild@0.18.20/node_modules/esbuild: Running postinstall script, done in 339ms
+
+devDependencies:
++ @kuma-ui/vite 1.3.2
+
+ WARN  Issues with peer dependencies found
+.
+└─┬ @kuma-ui/vite 1.3.2
+  └── ✕ unmet peer vite@"^4 || ^5": found 6.0.3
+
+Done in 6.8s
+```
+
+ただこの挙動、もしかしたら自分の認識違いの可能性も少しあって、[pnpm peer dependencies auto-install](https://stackoverflow.com/questions/72468635/pnpm-peer-dependencies-auto-install)を見てみると、`auto-install-peers = true`にデフォルトでなっているからかもしれないです。（[https://github.com/pnpm/pnpm/blob/6483b646fe5411042e8da45fb5f879a03cd6d280/config/config/src/index.ts#L117](https://github.com/pnpm/pnpm/blob/6483b646fe5411042e8da45fb5f879a03cd6d280/config/config/src/index.ts#L117)）
+
+## まとめ
+
+package.jsonもいろいろオプションあれば、パッケージ管理にも特徴があって面白いです！
