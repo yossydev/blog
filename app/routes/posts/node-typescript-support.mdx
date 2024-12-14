@@ -79,10 +79,14 @@ console.log(code); // "const foo         = 'bar';"
 
 ## tsconfigは見ない
 
-今回のNode.jsのtsサポートでは、tsconfigは読み込まれないようになっています。
+今回のNode.jsのtsサポートでは、tsconfigは読み込まれないようになっています。そのため、実行時の型チェックやエイリアスの設定、targetオプションの変更などはできないようになっています。
 
-そのため、実行時の型チェックやエイリアスの設定、targetオプションの変更などはできないようになっています。
+> TypeScript features that depend on settings within tsconfig.json, such as paths or converting newer JavaScript syntax to older standards, are intentionally unsupported. To get full TypeScript support, see Full TypeScript support.
 
-// TODO
+ここら辺は公式の[full typescrit support](https://nodejs.org/api/typescript.html#full-typescript-support)を見るとわかります。tsxや、書かれてはないですがts-nodeを使用するようにみたいな感じらしいですね。
 
-- https://nodejs.org/api/typescript.html#type-stripping
+## まとめ
+
+筆者としてはtsconfigを読み込まないのはエイリアス以外にも結構辛いポイントは出ると思っているので、それだったらts-nodeでいいんじゃないかなと思っている派です。
+
+ただDenoとかBunの影響を受けて、これだけのユーザー数がいるOSSが、誰もが待ち望んだ機能を入れてくれたのはやっぱりすごいなと思うので、引き続き応援していきたいです。
