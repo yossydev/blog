@@ -1,0 +1,74 @@
+---
+title: "node.jsのtsサポートに関して再度理解する"
+description: "a"
+date: "2024/12/17"
+updatedAt: "2024/12/17"
+path: "node-typescript-support"
+published: true
+---
+
+## Intro
+
+Node.jsの`--experimental-strip-types`と、`--experimental-transform-types`について再度理解します。
+
+## おさらい
+
+`--experimental-strip-types`を使うことで、TypeScriptファイルを実行できます。
+
+この時は、TypeScriptの構文、EnumやNamespaceを使えません。
+例えばEnumを使用すると、以下のようなエラーになります。
+
+```
+node:internal/modules/helpers:347
+    throw new ERR_INVALID_TYPESCRIPT_SYNTAX(error);
+          ^
+
+SyntaxError [ERR_INVALID_TYPESCRIPT_SYNTAX]:   x TypeScript enum is not supported in strip-only mode
+   ,-[1:1]
+ 1 | ,-> export enum Foo {
+ 2 | |       FOO,
+ 3 | |       BAR
+ 4 | `-> }
+   `----
+
+    at parseTypeScript (node:internal/modules/helpers:347:11)
+    at stripTypeScriptTypes (node:internal/modules/helpers:372:25)
+    at ModuleLoader.<anonymous> (node:internal/modules/esm/translators:475:16)
+    at #translate (node:internal/modules/esm/loader:433:12)
+    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:480:27) {
+  code: 'ERR_INVALID_TYPESCRIPT_SYNTAX'
+}
+```
+
+`TypeScript enum is not supported in strip-only mode`となりますね。
+
+そしてこれを解決するために生まれたのが、`--experimental-transform-types`になります。
+このフラグを有効にすることで、TypeScript独自の構文でも実行可能になります。
+
+ちなみにこの時、`--experimental-transform-types`は暗黙的に`--experimental-strip-types`も含んでいるので、おそらく今なら以下のスクリプトだけで十分なはずです。
+
+```
+"run": "node --experimental-transform-types index.ts",
+```
+
+```js
+// > 暗黙的に`--experimental-strip-types`も含んでいる
+// src: https://github.com/marco-ippolito/node/blob/e65928c6a10a6ae7983ccd3b3374d079ea3cb233/src/node_options.cc#L792-L798
+  AddOption("--experimental-transform-types",
+            "enable transformation of TypeScript-only"
+            "syntax into JavaScript code",
+            &EnvironmentOptions::experimental_transform_types,
+            kAllowedInEnvvar);
+  Implies("--experimental-transform-types", "--experimental-strip-types");
+  Implies("--experimental-transform-types", "--enable-source-maps");
+```
+
+## Amaroのスタックトレース保持方法
+
+## TypeScript特有の機能
+
+## tsconfigは見ない
+
+// TODO
+
+- https://nodejs.org/api/typescript.html#type-stripping
