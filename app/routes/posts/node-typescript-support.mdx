@@ -65,9 +65,23 @@ SyntaxError [ERR_INVALID_TYPESCRIPT_SYNTAX]:   x TypeScript enum is not supporte
 
 ## Amaroのスタックトレース保持方法
 
-## TypeScript特有の機能
+Node.jsではTypeScriptのトランスパイルにAmaroというswc typescript parserのラッパーを使用しています。
+
+そしてこちらの面白いところが、スタックトレースのために、型を除いた分の空白をそのままにしておくそうです。
+
+```ts
+const amaro = require('amaro');
+const { code } = amaro.transformSync("const foo: string = 'bar';", { mode: "strip-only" });
+console.log(code); // "const foo         = 'bar';"
+```
+
+型排除により詰めた分、元のコードとトランスパイル後のコードの行数は変わってしまうので、デバッグしづらくなるのを防いでいる感じですね。
 
 ## tsconfigは見ない
+
+今回のNode.jsのtsサポートでは、tsconfigは読み込まれないようになっています。
+
+そのため、実行時の型チェックやエイリアスの設定、targetオプションの変更などはできないようになっています。
 
 // TODO
 
