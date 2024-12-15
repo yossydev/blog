@@ -11,11 +11,10 @@ published: true
 
 ## Intro
 
-Node.jsの[--experimental-strip-types](https://nodejs.org/docs/v22.12.0/api/cli.html#--experimental-strip-types)というフラグについてご存知でしょうか。
-このフラグを有効にすることで、Node.jsでTypeScriptファイルが実行できるようになります。
+先日、[node.jsのtsサポートに関して再度理解する]()というブログを書きました。
 
-本記事では、おそらくブラウザを除いたJavaScriptランタイムの中では、もっとも使われているNode.jsが、今回のサポートを行うまで、今後の動き、
-そして最も主要な、ブラウザというランタイムでTypeScriptファイルが実行できることはあるのか。ということについて考えていきたいと思います。
+TypeScriptが現代の開発現場で当たり前になりつつある今、Node.jsはどのようにその流れに対応してきたのでしょうか？
+また、DenoやBunといった競合ランタイムと比較して、どこに優位性があるのでしょうか。本記事では、この進化の過程と未来を考察します。
 
 ## 前提
 
@@ -32,7 +31,7 @@ JavaScriptで書かれたNode.jsサーバー、大量のコンポーネントが
 このおかげで、確実にアプリケーション開発はしやすくなっていると思っています。
 
 しかし、TypeScriptはそのままでは動きません。必ず最終的にはJavaScriptにコンパイルされます。
-なので初期の頃は、tscで自分でコンパイルして、そこで出力されたJavaScriptファイル・ディレクトリをentry pointとし、アプリケーションを動かす、みたいなことをする必要がありました。
+なので初期の頃は、tscでTypeScriptコードをコンパイルし、その出力されたJavaScriptファイルをエントリポイントとしてアプリケーションを動かす必要がありました。
 
 けどもうそれは過去の話になろうとしています。というかもうなっています。
 
@@ -72,13 +71,14 @@ Hello, world!
 ## Bunの登場
 
 2代目かどうかはわかりませんが、同じくTypeScriptランタイムのBunです。
-色々言われていますが、筆者としてはこういう進み方もいいんじゃないかなと思っています。採用するかはわかりませんが。
+色々言われていますが、筆者としてはこういう進み方もいいんじゃないかなと思っています。何事も、新しいことに挑戦しようとする時は周囲からの否定的な意見がつきものです。
+ただ採用するかはわかりません。
 
-BunもDenoと同じく、TypeScriptファイルを実行できます。
+そしてBunもDenoと同じく、TypeScriptファイルを実行できます。
 ただ、Denoと違うのはtscを内部で持っていないので、もし型のチェックが必要な場合は自分で追加する必要があります。
 トランスパイルはしてくれるそうです。（なんかパッと見た感じ[Transpiler](https://bun.sh/docs/api/transpiler)ってAPIがやってそう...？？）
 
-## Node.js strip-typeの誕生
+## Node.jsの進化
 
 結構ざっくりですが、これまで存在したTypeScriptランタイムについてみていきました。
 大事なのは、それらは後発のランタイムで、Node.jsをもとに、改善点を見つけ生まれたのでが彼らであるといえます。
@@ -96,13 +96,7 @@ Node.jsはここ最近、かなり積極的に新機能を入れている印象�
 - 速度を追求し、独自の発展を続けるBun
 - 後発組から影響を受け更なる進化を続けるNode.js
 
-今のJavaScriptランタイムは、これらがいい具合に作用して、成長しあっていってるのではないでしょうか。
-Node.jsが本格的にTypeScriptサポートが入った時にどうなるDenoみたいな話もあると思いますが、そうやっていいものを取り入れて、成長していって欲しいです。
-Bunは引き続き筆者は見守ります。
-
-## 関連・参考
-
-- https://deno-ja.vercel.app/manual@v1.9.1/typescript/overview
-- https://deno.com/blog/v1.24#type-checking-and-emitting-performance-improvements
-- https://deno-ja.vercel.app/manual@v1.9.1/typescript/overview
-- https://github.com/denoland/deno/pull/3442
+今後、Node.jsがTypeScriptの完全サポートを進める中で、DenoやBunはどのような進化を見せていくのでしょうか。
+Bunはおそらく今と同じで、速度を注視しながら引き続き発展を続けていくのではないでしょうか。
+どちらかとえばDenoの動向が気になるところで、Denoの良さをNode.jsが取り入れている節もあると思いますが、逆にDenoも
+そして、ランタイム間の健全な競争は、JavaScriptエコシステム全体をどう進化させていくのか注目が集まります。
