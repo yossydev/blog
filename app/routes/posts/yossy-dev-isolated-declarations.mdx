@@ -1,11 +1,13 @@
 ---
-title: "yossy.devでisolatedDeclationを有効にした"
-description: "a"
-date: "2024/12/15"
-updatedAt: "2024/12/15"
+title: "yossy.devでisolatedDeclationを有効にしてtscの速度を測る"
+description: "Isolated Declarationsを有効にして、速度を測ってみました。"
+date: "2024/12/16"
+updatedAt: "2024/12/16"
 path: "isolated-declarations"
 published: true
 ---
+
+[2024年 ユウトの一人アドベントカレンダー](https://adventar.org/calendars/9980)の16日目の記事です。
 
 ## Intro
 
@@ -39,7 +41,9 @@ Errors  Files
 
 ## 結果
 
-`"typecheck:perfomance": "tsc --generateTrace . --incremental false --noEmit"`ってスクリプトを追加してみました。
+実際にコード上でどんな変更をしたかは、[https://github.com/yossydev/yossy.dev/pull/78/files#diff-87e9aecc3694701f8eaef8ed0938745a89219c6d60a3b30f7ae9c44dc6761490](https://github.com/yossydev/yossy.dev/pull/78/files)で確認できます。
+
+そして、`"typecheck:perfomance": "tsc --generateTrace . --incremental false --noEmit"`ってスクリプトを追加して、速度のチェックを行いました。
 
 ここで生成されるtrace.jsonを、chrome://tracingの右上にあるLoadボタンで読み込ませて確認しています。
 
