@@ -1,4 +1,6 @@
+import type { Env } from "hono";
 import type { FC } from "hono/jsx";
+import type { H } from "hono/types";
 import { createRoute } from "honox/factory";
 import { Heading } from "../../components/Heading";
 import { LINK } from "../../constants";
@@ -51,4 +53,10 @@ export default createRoute((c) => {
     </>,
     { title: "Profile | yossy.dev" },
   );
-});
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+  // biome-ignore lint/complexity/noBannedTypes: <explanation>
+}) satisfies [H<Env, any, {}, Response | Promise<Response>>] as [
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+  // biome-ignore lint/complexity/noBannedTypes: <explanation>
+  H<Env, any, {}, Response | Promise<Response>>,
+];

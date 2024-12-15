@@ -1,4 +1,5 @@
 import { Fragment } from "hono/jsx";
+import type { JSX } from "hono/jsx/jsx-runtime";
 import { Heading } from "../../components/Heading";
 import { rssClient } from "../../libs/rss/rss";
 
@@ -13,7 +14,7 @@ type PostEntry = {
 
 const FIRST_BLOG_POST_YEAR = 2021;
 
-export default function AllContent() {
+export default function AllContent(): JSX.Element {
   const posts = import.meta.glob<{
     frontmatter: { title: string; date: string; published: boolean };
   }>("../posts/*.mdx", { eager: true });

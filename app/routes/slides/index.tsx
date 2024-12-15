@@ -1,10 +1,11 @@
 import { Fragment } from "hono/jsx";
+import type { JSX } from "hono/jsx/jsx-runtime";
 import { Heading } from "../../components/Heading";
 import { rssClient } from "../../libs/rss/rss";
 
 const FIRST_SPEAKERDECK_YEAR = 2022;
 
-export default function Slide() {
+export default function Slide(): JSX.Element {
   const yearlyBlogs = () => {
     const data = [];
     const thisYear = new Date().getFullYear();
